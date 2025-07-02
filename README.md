@@ -61,13 +61,14 @@ drivers can open them.
 docker run --rm -it --privileged ddboat_ros2 bash -c '
   source /opt/ros/humble/setup.bash
   source /opt/ws/install/local_setup.bash
-  ros2 run ros2_ddboat emulate_devices.py &          # create fake /dev/tty* ports
+  ros2 run ros2_ddboat emulate_devices.py &          # create fake /dev/tty* ports and /dev/i2c-1
   ros2 launch ros2_ddboat all_nodes.launch.py        # start every driver
 '
 ```
 
 The `emulate_devices.py` helper keeps a set of pseudo‑terminals open and feeds
-dummy data so all nodes start without errors.
+dummy data. It now also emulates `/dev/i2c-1` so the IMU and temperature nodes
+receive random values even without real sensors.
 
 ---
 
