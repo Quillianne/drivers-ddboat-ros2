@@ -178,10 +178,10 @@ sudo python3 emulate_devices.py
 
 ### Build
 
-Install the `serial` dependency and then compile the package with `colcon`:
+Install the `serial_driver` dependency and then compile the package with `colcon`:
 
 ```bash
-sudo apt-get install ros-humble-serial
+sudo apt-get install ros-humble-serial-driver
 colcon build --packages-select ros2_ddboat
 ```
 

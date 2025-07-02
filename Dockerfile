@@ -4,7 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /opt/ws
 
 RUN apt-get update && \
-    apt-get install -y build-essential ros-humble-serial && \
+    # install the C++ serial library used by the nodes
+    apt-get install -y build-essential ros-humble-serial-driver && \
     rm -rf /var/lib/apt/lists/*
 
 COPY . /opt/ws/src/drivers-ddboat-ros2
