@@ -11,6 +11,7 @@ def main():
     def cb(msg):
         nonlocal received
         node.get_logger().info(f"fix: {msg.latitude} {msg.longitude}")
+        print(f"fix: {msg.latitude} {msg.longitude}")
         received = True
 
     node.create_subscription(NavSatFix, 'fix', cb, 10)
