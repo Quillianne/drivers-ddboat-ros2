@@ -1,23 +1,45 @@
-import rclpy
-from rclpy.node import Node
-from sensor_msgs.msg import NavSatFix
+"""
+Subscribe to `/fix` (sensor_msgs/NavSatFix) through rosbridge / roslibpy.
+
+Prerequisites
+-------------
+* rosbridge_server running on port 9090 (see the `rosbridge` service
+  in docker‑compose).
+
+Run with:
+
+    python3 test_gps_node.py
+"""
+
+import time
+import roslibpy
 
 
-def main():
-    rclpy.init()
-    node = Node('test_gps_node')
-    received = False
+def main() -> None:
+    client = roslibpy.Ros(host='localhost', port=9090)
+    client.run()
 
-    def cb(msg):
-        nonlocal received
-        node.get_logger().info(f"fix: {msg.latitude} {msg.longitude}")
-        received = True
+    def on_fix(msg):
+        lat = msg['latitude']
+        lon = msg['longitude']
+        print(f'fix: {lat:.6f} {lon:.6f}')
+        # After first message, we can stop listening
+        fix_topic.unsubscribe()
+        client.terminate()
 
-    node.create_subscription(NavSatFix, 'fix', cb, 10)
-    while rclpy.ok() and not received:
-        rclpy.spin_once(node, timeout_sec=1.0)
-    node.destroy_node()
-    rclpy.shutdown()
+    fix_topic = roslibpy.Topic(
+        client,
+        '/fix',
+        'sensor_msgs/NavSatFix'
+    )
+    fix_topic.subscribe(on_fix)
+
+    # Keep the script alive until `client.terminate()` is called
+    try:
+        while client.is_connected:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        client.terminate()
 
 
 if __name__ == '__main__':

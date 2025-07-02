@@ -1,27 +1,56 @@
-import rclpy
-from rclpy.node import Node
-from sensor_msgs.msg import Temperature
+"""
+Subscribe to `/temperature_left` and `/temperature_right` (sensor_msgs/Temperature)
+through rosbridge / roslibpy.
+
+Prerequisites
+-------------
+* rosbridge_server running on port 9090 (see the `rosbridge` service
+  in docker-compose).
+
+Run with:
+
+    python3 test_temp_node.py
+"""
+
+import time
+import roslibpy
 
 
-def main():
-    rclpy.init()
-    node = Node('test_temperature_node')
-    received = 0
+def main() -> None:
+    client = roslibpy.Ros(host='localhost', port=9090)
+    client.run()
 
-    def cb(msg):
-        nonlocal received
-        received += 1
-        node.get_logger().info(f'temp {received}: {msg.temperature}')
-        if received >= 2:
-            rclpy.shutdown()
+    received = {'count': 0}
 
-    node.create_subscription(Temperature, 'temperature_left', cb, 10)
-    node.create_subscription(Temperature, 'temperature_right', cb, 10)
+    def on_temp(msg):
+        received['count'] += 1
+        temp = msg['temperature']
+        print(f'temp {received["count"]}: {temp}')
+        if received['count'] >= 2:
+            left_topic.unsubscribe()
+            right_topic.unsubscribe()
+            client.terminate()
+
+    left_topic = roslibpy.Topic(
+        client,
+        '/temperature_left',
+        'sensor_msgs/Temperature'
+    )
+    right_topic = roslibpy.Topic(
+        client,
+        '/temperature_right',
+        'sensor_msgs/Temperature'
+    )
+    left_topic.subscribe(on_temp)
+    right_topic.subscribe(on_temp)
+
     try:
-        rclpy.spin(node)
+        while client.is_connected:
+            time.sleep(0.1)
     except KeyboardInterrupt:
-        pass
-    node.destroy_node()
+        left_topic.unsubscribe()
+        right_topic.unsubscribe()
+        client.terminate()
 
 
 if __name__ == '__main__':
