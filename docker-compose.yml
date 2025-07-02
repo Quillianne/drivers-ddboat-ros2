@@ -111,7 +111,8 @@ services:
     container_name: ddboat_sim
     command: >
       bash -c "\
-        set -euo pipefail; \
+        set -eo pipefail; \
+        export AMENT_TRACE_SETUP_FILES=0; \
         source /opt/ros/humble/setup.bash && \
         source /opt/ws/install/local_setup.bash && \
         ros2 run ros2_ddboat emulate_devices.py & \
@@ -120,7 +121,7 @@ services:
           echo \"waiting for $$DEV ...\"; \
           while [ ! -e $$DEV ]; do sleep 0.1; done; \
         done; \
-        echo \"all pseudo-TTYs ready; launching ROS 2 drivers\"; \
+        echo \"all pseudo-TTYs ready; launching ROS 2 drivers\"; \
         ros2 launch ros2_ddboat all_nodes.launch.py; \
         EXIT=$$?; kill $$EMU_PID; exit $$EXIT"
     profiles: ["sim"]
