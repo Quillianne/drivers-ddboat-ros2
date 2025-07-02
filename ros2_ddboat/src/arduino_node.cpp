@@ -1,0 +1,53 @@
+#include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <serial/serial.h>
+#include <string>
+
+class ArduinoNode : public rclcpp::Node
+{
+public:
+  ArduinoNode() : Node("arduino_node"), serial_()
+  {
+    port_ = this->declare_parameter<std::string>("port", "/dev/ttyV0");
+    int baud = this->declare_parameter<int>("baud", 115200);
+    serial_.setPort(port_);
+    serial_.setBaudrate(baud);
+    serial_.setTimeout(serial::Timeout::simpleTimeout(1000));
+    try {
+      serial_.open();
+    } catch (const std::exception &e) {
+      RCLCPP_ERROR(get_logger(), "Failed to open %s: %s", port_.c_str(), e.what());
+    }
+    sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
+      "motors_cmd", 10, std::bind(&ArduinoNode::cmd_callback, this, std::placeholders::_1));
+  }
+
+private:
+  void cmd_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
+  {
+    if (!serial_.isOpen()) {
+      return;
+    }
+    int cmdl = static_cast<int>(msg->linear.x);
+    int cmdr = static_cast<int>(msg->linear.y);
+    char dirl = ' ';
+    char dirr = ' ';
+    if (cmdl < 0) { dirl = '-'; cmdl = -cmdl; }
+    if (cmdr < 0) { dirr = '-'; cmdr = -cmdr; }
+    char buf[32];
+    snprintf(buf, sizeof(buf), "M%c%03d%c%03d;", dirl, cmdl, dirr, cmdr);
+    serial_.write(std::string(buf));
+  }
+
+  serial::Serial serial_;
+  std::string port_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr sub_;
+};
+
+int main(int argc, char *argv[])
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<ArduinoNode>());
+  rclcpp::shutdown();
+  return 0;
+}
