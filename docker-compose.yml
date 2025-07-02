@@ -31,13 +31,16 @@
 # so the ROS 2 drivers remain unchanged.
 #############################
 
-
 x-ddboat-base: &ddboat_base
   build: .                      # build the ddboat_ros2 image from repo root
   image: ddboat_ros2:latest
-  privileged: true              # required for serial + I²C device access
-  network_mode: host            # ROS 2 DDS runs on the host network
+  privileged: true              # serial, I²C, etc.
+  network_mode: host            # DDS multicast on host LAN
+  ipc: host                     # share /dev/shm for Cyclone DDS
   tty: true
+  environment:
+    - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    - ROS_DOMAIN_ID=0
 
 services:
   # --------------------------------------------------
@@ -104,14 +107,22 @@ services:
   # FULL STACK – SOFTWARE‑ONLY EMULATION
   # --------------------------------------------------
   ddboat_sim:
+    ipc: host
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=0
     <<: *ddboat_base
     container_name: ddboat_sim
+    volumes:
+      - ./tests:/tests:ro
     command: >
       bash -c "\
         source /opt/ros/humble/setup.bash && \
         source /opt/ws/install/local_setup.bash && \
         ros2 run ros2_ddboat emulate_devices.py & \
         sleep 2 && \
+        # stub I2C so IMU/temperature nodes start cleanly
+        ( [ -e /dev/i2c-1 ] || (mknod /dev/i2c-1 c 89 1 && chmod 666 /dev/i2c-1) ); \
         ros2 launch ros2_ddboat all_nodes.launch.py"
     profiles: ["sim"]
 
@@ -119,6 +130,10 @@ services:
   # ROS 2 BRIDGE – WebSocket interface for remote access
   # --------------------------------------------------
   rosbridge:
+    ipc: host
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=0
     image: ddboat_ros2:latest
     network_mode: host
     command: >
