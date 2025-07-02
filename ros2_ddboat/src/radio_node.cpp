@@ -15,7 +15,8 @@ public:
     int baud = this->declare_parameter<int>("baud", 115200);
     serial_.setPort(port_);
     serial_.setBaudrate(baud);
-    serial_.setTimeout(serial::Timeout::simpleTimeout(1000));
+    auto timeout = serial::Timeout::simpleTimeout(1000);
+    serial_.setTimeout(timeout);
     try {
       serial_.open();
     } catch (const std::exception &e) {
