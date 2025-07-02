@@ -26,6 +26,42 @@ DEVICE_GENS = {
 }
 
 
+def create_i2c_device(path):
+    """Create a pseudo I2C device that returns random bytes."""
+    master, slave = pty.openpty()
+    slave_name = os.ttyname(slave)
+    if os.geteuid() == 0:
+        try:
+            if os.path.exists(path) or os.path.islink(path):
+                os.remove(path)
+            os.symlink(slave_name, path)
+            print(f"Created {path} -> {slave_name}")
+        except PermissionError as e:
+            print(f"Cannot create symlink for {path}: {e}")
+    else:
+        print(f"Use {slave_name} for {path} (run as root to symlink)")
+
+    def emulator():
+        while True:
+            try:
+                req = os.read(master, 1)
+            except OSError:
+                break
+            if not req:
+                time.sleep(0.01)
+                continue
+            reg = req[0]
+            # IMU registers read 6 bytes, temperature 1 byte
+            if reg in (0x22, 0x28):
+                length = 6
+            else:
+                length = 1
+            data = bytes(random.getrandbits(8) for _ in range(length))
+            os.write(master, data)
+
+    threading.Thread(target=emulator, daemon=True).start()
+
+
 def gps_line():
     lat = random.uniform(-90, 90)
     lon = random.uniform(-180, 180)
@@ -66,6 +102,8 @@ def create_device(path, gen_func):
 def main():
     for path, gen in DEVICE_GENS.items():
         create_device(path, gen)
+    # Provide a dummy I2C bus for the IMU and temperature drivers
+    create_i2c_device('/dev/i2c-1')
     print("Devices emulation running. Press Ctrl+C to stop.")
     signal.pause()
 
