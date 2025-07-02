@@ -33,4 +33,11 @@ ament_target_dependencies(radio_node rclcpp std_msgs)
 install(TARGETS gps_node arduino_node encoders_node imu_node temp_node radio_node
   DESTINATION lib/${PROJECT_NAME})
 
+install(PROGRAMS
+  scripts/emulate_devices.py
+  DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME})
+
 ament_package()

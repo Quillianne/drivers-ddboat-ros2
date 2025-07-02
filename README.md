@@ -169,11 +169,12 @@ defaults for the ROS2 nodes:
 - `/dev/i2c-1` – I²C bus for the IMU and temperature sensors
 
 When hardware is unavailable you can emulate the serial devices with
-`emulate_devices.py`.  Running it as root will create symbolic links in
-`/dev/` so the nodes can open the usual paths:
+`ros2 run ros2_ddboat emulate_devices.py`.  Running it as root will
+create symbolic links in `/dev/` so the nodes can open the usual
+paths:
 
 ```bash
-sudo python3 emulate_devices.py
+sudo ros2 run ros2_ddboat emulate_devices.py
 ```
 
 ### Build
@@ -213,6 +214,17 @@ docker run --rm -it \
   ddboat_ros2
 ```
 
+### Docker Compose
+
+To run all nodes at once use the provided compose file:
+
+```bash
+docker compose up --build
+```
+
+This starts every driver using the launch file
+`ros2_ddboat/launch/all_nodes.launch.py`.
+
 The entrypoint automatically sources the ROS environment and the workspace,
 via `/entrypoint.sh`, so you can run the nodes right away:
 
@@ -228,7 +240,7 @@ When developing on a PC or in a virtual machine you may create fake
 devices for testing:
 
 ```bash
-sudo python3 emulate_devices.py
+sudo ros2 run ros2_ddboat emulate_devices.py
 ```
 
 This command creates `/dev/ttyGPS0`, `/dev/ttyV0`, and other dummy
