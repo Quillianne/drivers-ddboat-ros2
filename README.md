@@ -178,11 +178,11 @@ sudo python3 emulate_devices.py
 
 ### Build
 
-Install the `serial_driver` dependency, which provides the C++ serial library
-used by the nodes, and then compile the package with `colcon`:
+Install the `serial_driver` dependency (and the required Asio CMake module),
+then compile the package with `colcon`:
 
 ```bash
-sudo apt-get install ros-humble-serial-driver
+sudo apt-get install ros-humble-serial-driver ros-humble-asio-cmake-module
 colcon build --packages-select ros2_ddboat
 ```
 
