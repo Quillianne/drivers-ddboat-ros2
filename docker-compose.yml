@@ -1,5 +1,3 @@
-version: "3.9"
-
 #############################
 # DDBoat ROS 2 – docker‑compose
 # ---------------------------
@@ -34,16 +32,20 @@ version: "3.9"
 #############################
 
 x-ddboat-base: &ddboat_base
-  build: .                    # build the ddboat_ros2 image from repo root
+  build: .                      # build the ddboat_ros2 image from repo root
   image: ddboat_ros2:latest
-  privileged: true            # required for serial + I²C device access
-  network_mode: host          # ROS 2 DDS runs on the host network
-  tty: true                   # keep stdin open for interactive exec
+  privileged: true              # serial, I²C, etc.
+  network_mode: host            # DDS multicast on host LAN
+  ipc: host                     # share /dev/shm for Cyclone DDS
+  tty: true
+  environment:
+    - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    - ROS_DOMAIN_ID=0
 
 services:
-  # ----------------------------------------------------
+  # --------------------------------------------------
   # FULL STACK – REAL HARDWARE
-  # ----------------------------------------------------
+  # --------------------------------------------------
   ddboat_all:
     <<: *ddboat_base
     container_name: ddboat_all
@@ -56,11 +58,9 @@ services:
     command: ros2 launch ros2_ddboat all_nodes.launch.py
     profiles: ["hw"]
 
-  # ----------------------------------------------------
+  # --------------------------------------------------
   # INDIVIDUAL DRIVER CONTAINERS – REAL HARDWARE
-  # Each service uses the same image but maps only its own device(s).
-  # Start with, e.g.  `docker compose --profile hw up gps_node`
-  # ----------------------------------------------------
+  # --------------------------------------------------
   gps_node:
     <<: *ddboat_base
     devices:
@@ -103,24 +103,44 @@ services:
     command: ros2 run ros2_ddboat radio_node
     profiles: ["hw"]
 
-  # ----------------------------------------------------
+  # --------------------------------------------------
   # FULL STACK – SOFTWARE‑ONLY EMULATION
-  # ----------------------------------------------------
+  # --------------------------------------------------
   ddboat_sim:
+    ipc: host
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=0
     <<: *ddboat_base
     container_name: ddboat_sim
+    volumes:
+      - ./tests:/tests:ro
     command: >
       bash -c "\
-        set -euo pipefail; \
         source /opt/ros/humble/setup.bash && \
         source /opt/ws/install/local_setup.bash && \
         ros2 run ros2_ddboat emulate_devices.py & \
-        EMU_PID=$$!; \
-        for DEV in /dev/ttyGPS0 /dev/ttyV0 /dev/ttyENC0 /dev/ttyLORA1; do \
-          echo \"waiting for $$DEV ...\"; \
-          while [ ! -e $$DEV ]; do sleep 0.1; done; \
-        done; \
-        echo \"all pseudo-TTYs ready; launching ROS 2 drivers\"; \
-        ros2 launch ros2_ddboat all_nodes.launch.py; \
-        EXIT=$$?; kill $$EMU_PID; exit $$EXIT"
+        sleep 2 && \
+        # stub I2C so IMU/temperature nodes start cleanly
+        ( [ -e /dev/i2c-1 ] || (mknod /dev/i2c-1 c 89 1 && chmod 666 /dev/i2c-1) ); \
+        ros2 launch ros2_ddboat all_nodes.launch.py"
     profiles: ["sim"]
+
+  # --------------------------------------------------
+  # ROS 2 BRIDGE – WebSocket interface for remote access
+  # --------------------------------------------------
+  rosbridge:
+    ipc: host
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=0
+    image: ddboat_ros2:latest
+    network_mode: host
+    command: >
+      bash -c "apt-get update && \
+               DEBIAN_FRONTEND=noninteractive apt-get install -y ros-humble-rosbridge-suite && \
+               source /opt/ros/humble/setup.bash && \
+               ros2 launch rosbridge_server rosbridge_websocket_launch.xml"
+    depends_on:
+      - ddboat_sim
+    profiles: ["sim", "hw"]
