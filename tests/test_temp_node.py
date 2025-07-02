@@ -14,6 +14,7 @@ Run with:
 
 import time
 import roslibpy
+import threading
 
 
 def main() -> None:
@@ -25,11 +26,14 @@ def main() -> None:
     def on_temp(msg):
         received['count'] += 1
         temp = msg['temperature']
-        print(f'temp {received["count"]}: {temp}')
+        print(f"Received temp {received['count']}: {temp}")
         if received['count'] >= 2:
-            left_topic.unsubscribe()
-            right_topic.unsubscribe()
-            client.terminate()
+            # Clean up in a background thread to avoid joining current thread
+            def _shutdown():
+                left_topic.unsubscribe()
+                right_topic.unsubscribe()
+                client.terminate()
+            threading.Thread(target=_shutdown, daemon=True).start()
 
     left_topic = roslibpy.Topic(
         client,

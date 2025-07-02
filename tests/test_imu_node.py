@@ -13,6 +13,7 @@ Run with:
 
 import time
 import roslibpy
+import threading
 
 
 def main() -> None:
@@ -20,10 +21,12 @@ def main() -> None:
     client.run()
 
     def on_imu(msg):
-        print('imu msg received')
-        # After first message, stop listening
-        imu_topic.unsubscribe()
-        client.terminate()
+        print(f"IMU msg received: {msg}")
+        # Clean up in a background thread
+        def _shutdown():
+            imu_topic.unsubscribe()
+            client.terminate()
+        threading.Thread(target=_shutdown, daemon=True).start()
 
     imu_topic = roslibpy.Topic(
         client,

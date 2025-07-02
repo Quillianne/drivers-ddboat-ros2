@@ -13,6 +13,7 @@ Run with:
 
 import time
 import roslibpy
+import threading
 
 
 def main() -> None:
@@ -22,9 +23,11 @@ def main() -> None:
     def on_encoders(msg):
         data = msg['data']
         print(f'encoders: {data}')
-        # After first message, stop listening
-        enc_topic.unsubscribe()
-        client.terminate()
+        # Clean up in a background thread
+        def _shutdown():
+            enc_topic.unsubscribe()
+            client.terminate()
+        threading.Thread(target=_shutdown, daemon=True).start()
 
     enc_topic = roslibpy.Topic(
         client,

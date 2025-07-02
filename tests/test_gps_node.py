@@ -13,6 +13,7 @@ Run with:
 
 import time
 import roslibpy
+import threading
 
 
 def main() -> None:
@@ -22,10 +23,12 @@ def main() -> None:
     def on_fix(msg):
         lat = msg['latitude']
         lon = msg['longitude']
-        print(f'fix: {lat:.6f} {lon:.6f}')
-        # After first message, we can stop listening
-        fix_topic.unsubscribe()
-        client.terminate()
+        print(f"Received fix: {lat:.6f}, {lon:.6f}")
+        # Clean up in a background thread to avoid joining the current thread
+        def _shutdown():
+            fix_topic.unsubscribe()
+            client.terminate()
+        threading.Thread(target=_shutdown, daemon=True).start()
 
     fix_topic = roslibpy.Topic(
         client,

@@ -12,6 +12,7 @@ Run with:
 
 import time
 import roslibpy
+import threading
 
 
 def main() -> None:
@@ -25,9 +26,12 @@ def main() -> None:
     # Callback for incoming messages on /radio_rx
     def on_rx(msg):
         print(f"radio rx: {msg['data']}")
-        rx_topic.unsubscribe()
-        tx_topic.unadvertise()
-        client.terminate()
+        # Clean up in a background thread to avoid joining the current thread
+        def _shutdown():
+            rx_topic.unsubscribe()
+            tx_topic.unadvertise()
+            client.terminate()
+        threading.Thread(target=_shutdown, daemon=True).start()
 
     # Subscriber on /radio_rx
     rx_topic = roslibpy.Topic(client, '/radio_rx', 'std_msgs/String')

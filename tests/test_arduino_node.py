@@ -9,6 +9,7 @@ Run a rosbridge server (e.g. the `rosbridge` service in docker‑compose on port
 
 import time
 import roslibpy
+import threading
 
 
 def main() -> None:
@@ -28,13 +29,17 @@ def main() -> None:
     }
 
     # Publish five times with a short pause
-    for _ in range(5):
+    for i in range(5):
+        print(f'Publishing twist #{i+1}: {twist_msg}')
         twist_topic.publish(roslibpy.Message(twist_msg))
         time.sleep(0.1)
 
-    # Clean up
-    twist_topic.unadvertise()
-    client.terminate()
+    # Clean up from a separate thread
+    def _shutdown():
+        print('Shutting down: unadvertising and terminating client')
+        twist_topic.unadvertise()
+        client.terminate()
+    threading.Thread(target=_shutdown, daemon=True).start()
 
 
 if __name__ == '__main__':
