@@ -1,6 +1,118 @@
-version: '3.8'
+version: "3.9"
+
+#############################
+# DDBoat ROS 2 – docker‑compose
+# ---------------------------
+# PROFILES
+#   • hw  – run against the real Raspberry Pi hardware
+#   • sim – full software emulation for laptops/CI
+#
+# HARDWARE MODE SERVICES (profile: hw)
+#   ddboat_all      – start **all** drivers in one container (default workflow)
+#   gps_node        – GNSS only
+#   arduino_node    – motor controller only
+#   encoders_node   – propeller encoders only
+#   imu_node        – 9‑axis IMU only
+#   temperature_node– motor thermometers only
+#   radio_node      – LoRa radio only
+#
+# SIMULATION MODE SERVICES (profile: sim)
+#   ddboat_sim – device emulator + all drivers
+#
+# === Selecting the host serial ports ===
+# Export these variables *before* running `docker compose` to bind to the
+# correct device numbers on your Pi/PC:
+#
+#   export GPS_DEV=/dev/ttyGPS2      # defaults to /dev/ttyGPS0
+#   export ARDUINO_DEV=/dev/ttyV3    # defaults to /dev/ttyV0
+#   export ENC_DEV=/dev/ttyENC1      # defaults to /dev/ttyENC0
+#   export LORA_DEV=/dev/ttyLORA5    # defaults to /dev/ttyLORA1
+#
+# Inside every container the devices are always visible at:
+#   /dev/ttyGPS0   /dev/ttyV0   /dev/ttyENC0   /dev/ttyLORA1
+# so the ROS 2 drivers remain unchanged.
+#############################
+
+x-ddboat-base: &ddboat_base
+  build: .                    # build the ddboat_ros2 image from repo root
+  image: ddboat_ros2:latest
+  privileged: true            # required for serial + I²C device access
+  network_mode: host          # ROS 2 DDS runs on the host network
+  tty: true                   # keep stdin open for interactive exec
+
 services:
-  ddboat:
-    build: .
+  # ----------------------------------------------------
+  # FULL STACK – REAL HARDWARE
+  # ----------------------------------------------------
+  ddboat_all:
+    <<: *ddboat_base
+    container_name: ddboat_all
+    devices:
+      - ${GPS_DEV:-/dev/ttyGPS0}:/dev/ttyGPS0
+      - ${ARDUINO_DEV:-/dev/ttyV0}:/dev/ttyV0
+      - ${ENC_DEV:-/dev/ttyENC0}:/dev/ttyENC0
+      - ${LORA_DEV:-/dev/ttyLORA1}:/dev/ttyLORA1
+      - /dev/i2c-1:/dev/i2c-1
     command: ros2 launch ros2_ddboat all_nodes.launch.py
-    privileged: true
+    profiles: ["hw"]
+
+  # ----------------------------------------------------
+  # INDIVIDUAL DRIVER CONTAINERS – REAL HARDWARE
+  # Each service uses the same image but maps only its own device(s).
+  # Start with, e.g.  `docker compose --profile hw up gps_node`
+  # ----------------------------------------------------
+  gps_node:
+    <<: *ddboat_base
+    devices:
+      - ${GPS_DEV:-/dev/ttyGPS0}:/dev/ttyGPS0
+    command: ros2 run ros2_ddboat gps_node
+    profiles: ["hw"]
+
+  arduino_node:
+    <<: *ddboat_base
+    devices:
+      - ${ARDUINO_DEV:-/dev/ttyV0}:/dev/ttyV0
+    command: ros2 run ros2_ddboat arduino_node
+    profiles: ["hw"]
+
+  encoders_node:
+    <<: *ddboat_base
+    devices:
+      - ${ENC_DEV:-/dev/ttyENC0}:/dev/ttyENC0
+    command: ros2 run ros2_ddboat encoders_node
+    profiles: ["hw"]
+
+  imu_node:
+    <<: *ddboat_base
+    devices:
+      - /dev/i2c-1:/dev/i2c-1
+    command: ros2 run ros2_ddboat imu_node
+    profiles: ["hw"]
+
+  temperature_node:
+    <<: *ddboat_base
+    devices:
+      - /dev/i2c-1:/dev/i2c-1
+    command: ros2 run ros2_ddboat temperature_node
+    profiles: ["hw"]
+
+  radio_node:
+    <<: *ddboat_base
+    devices:
+      - ${LORA_DEV:-/dev/ttyLORA1}:/dev/ttyLORA1
+    command: ros2 run ros2_ddboat radio_node
+    profiles: ["hw"]
+
+  # ----------------------------------------------------
+  # FULL STACK – SOFTWARE‑ONLY EMULATION
+  # ----------------------------------------------------
+  ddboat_sim:
+    <<: *ddboat_base
+    container_name: ddboat_sim
+    command: >
+      bash -c "\
+        source /opt/ros/humble/setup.bash && \
+        source /opt/ws/install/local_setup.bash && \
+        ros2 run ros2_ddboat emulate_devices.py & \
+        ros2 launch ros2_ddboat all_nodes.launch.py"
+    profiles: ["sim"]
