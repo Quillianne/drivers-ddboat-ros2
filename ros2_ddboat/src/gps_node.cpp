@@ -2,6 +2,7 @@
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <serial/serial.h>
 #include <string>
+#include <vector>
 #include <chrono>
 
 using namespace std::chrono_literals;
@@ -34,10 +35,54 @@ private:
     }
     std::string line = serial_.readline();
     if (line.rfind("$GPGLL", 0) == 0) {
-      // TODO: parse line properly
       auto msg = sensor_msgs::msg::NavSatFix();
+      double lat = 0.0, lon = 0.0;
+      if (parse_gpgll(line, lat, lon)) {
+        msg.latitude = lat;
+        msg.longitude = lon;
+        msg.header.stamp = now();
+      }
       publisher_->publish(msg);
     }
+  }
+
+  static bool parse_gpgll(const std::string &line, double &lat, double &lon)
+  {
+    // $GPGLL,4916.45,N,12311.12,W,225444,A*1D
+    auto parts = split(line, ',');
+    if (parts.size() < 5) {
+      return false;
+    }
+    lat = parse_ddmm(parts[1]);
+    if (parts[2] == "S") lat = -lat;
+    lon = parse_ddmm(parts[3]);
+    if (parts[4] == "W") lon = -lon;
+    return true;
+  }
+
+  static std::vector<std::string> split(const std::string &str, char sep)
+  {
+    std::vector<std::string> out;
+    std::string tmp;
+    for (char c : str) {
+      if (c == sep) {
+        out.push_back(tmp);
+        tmp.clear();
+      } else {
+        tmp += c;
+      }
+    }
+    out.push_back(tmp);
+    return out;
+  }
+
+  static double parse_ddmm(const std::string &val)
+  {
+    if (val.size() < 4) return 0.0;
+    double d = std::stod(val);
+    int deg = static_cast<int>(d / 100);
+    double minutes = d - deg * 100;
+    return deg + minutes / 60.0;
   }
 
   serial::Serial serial_;

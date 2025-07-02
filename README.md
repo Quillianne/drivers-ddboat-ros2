@@ -178,9 +178,10 @@ sudo python3 emulate_devices.py
 
 ### Build
 
-Compile the package in a ROS2 workspace using `colcon`:
+Install the `serial` dependency and then compile the package with `colcon`:
 
 ```bash
+sudo apt-get install ros-humble-serial
 colcon build --packages-select ros2_ddboat
 ```
 
