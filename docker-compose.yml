@@ -31,17 +31,18 @@
 # so the ROS 2 drivers remain unchanged.
 #############################
 
+
 x-ddboat-base: &ddboat_base
-  build: .                    # build the ddboat_ros2 image from repo root
+  build: .                      # build the ddboat_ros2 image from repo root
   image: ddboat_ros2:latest
-  privileged: true            # required for serial + I²C device access
-  network_mode: host          # ROS 2 DDS runs on the host network
-  tty: true                   # keep stdin open for interactive exec
+  privileged: true              # required for serial + I²C device access
+  network_mode: host            # ROS 2 DDS runs on the host network
+  tty: true
 
 services:
-  # ----------------------------------------------------
+  # --------------------------------------------------
   # FULL STACK – REAL HARDWARE
-  # ----------------------------------------------------
+  # --------------------------------------------------
   ddboat_all:
     <<: *ddboat_base
     container_name: ddboat_all
@@ -54,11 +55,9 @@ services:
     command: ros2 launch ros2_ddboat all_nodes.launch.py
     profiles: ["hw"]
 
-  # ----------------------------------------------------
+  # --------------------------------------------------
   # INDIVIDUAL DRIVER CONTAINERS – REAL HARDWARE
-  # Each service uses the same image but maps only its own device(s).
-  # Start with, e.g.  `docker compose --profile hw up gps_node`
-  # ----------------------------------------------------
+  # --------------------------------------------------
   gps_node:
     <<: *ddboat_base
     devices:
@@ -101,9 +100,9 @@ services:
     command: ros2 run ros2_ddboat radio_node
     profiles: ["hw"]
 
-  # ----------------------------------------------------
+  # --------------------------------------------------
   # FULL STACK – SOFTWARE‑ONLY EMULATION
-  # ----------------------------------------------------
+  # --------------------------------------------------
   ddboat_sim:
     <<: *ddboat_base
     container_name: ddboat_sim
@@ -116,17 +115,15 @@ services:
         ros2 launch ros2_ddboat all_nodes.launch.py"
     profiles: ["sim"]
 
-  # ----------------------------------------------------
+  # --------------------------------------------------
   # ROS 2 BRIDGE – WebSocket interface for remote access
-  # ----------------------------------------------------
+  # --------------------------------------------------
   rosbridge:
-    image: ros:humble-ros-base          # tiny 200 MB image
-    network_mode: host                  # shares LAN with ddboat_sim
+    image: ros:humble-ros-base      # small base image with ROS 2 tools
+    network_mode: host              # share LAN/DDS multicast with other services
     command: >
-      bash -c "source /opt/ros/humble/setup.bash &&
-              ros2 launch rosbridge_server
-                    rosbridge_websocket_launch.xml"
-    depends_on: [ddboat_sim]
+      bash -c "source /opt/ros/humble/setup.bash && \
+               ros2 launch rosbridge_server rosbridge_websocket_launch.xml"
+    depends_on:
+      - ddboat_sim
     profiles: ["sim", "hw"]
-
-
