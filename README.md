@@ -214,7 +214,7 @@ docker run --rm -it \
 ```
 
 The entrypoint automatically sources the ROS environment and the workspace,
-so you can run the nodes right away:
+via `/entrypoint.sh`, so you can run the nodes right away:
 
 ```bash
 ros2 run ros2_ddboat arduino_node

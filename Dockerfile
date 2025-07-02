@@ -8,8 +8,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY . /opt/ws/src/drivers-ddboat-ros2
-RUN . /opt/ros/humble/setup.sh && \
+RUN unset CATKIN_INSTALL_INTO_PREFIX_ROOT && \
+    . /opt/ros/humble/setup.sh && \
     colcon build --packages-select ros2_ddboat --cmake-args -DCMAKE_BUILD_TYPE=Release --parallel-workers 1
 
-ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["bash", "-c", "source /opt/ws/install/setup.bash && exec bash"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]
