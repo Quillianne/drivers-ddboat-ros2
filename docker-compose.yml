@@ -119,11 +119,14 @@ services:
   # ROS 2 BRIDGE – WebSocket interface for remote access
   # --------------------------------------------------
   rosbridge:
-    image: ros:humble-ros-base      # small base image with ROS 2 tools
-    network_mode: host              # share LAN/DDS multicast with other services
+    image: ddboat_ros2:latest
+    network_mode: host
     command: >
-      bash -c "source /opt/ros/humble/setup.bash && \
-               ros2 launch rosbridge_server rosbridge_websocket_launch.xml"
+      bash -c "\
+        apt-get update && apt-get install -y --no-install-recommends \
+          ros-humble-rosbridge-suite && \
+        source /opt/ros/humble/setup.bash && \
+        ros2 launch rosbridge_server rosbridge_websocket_launch.xml"
     depends_on:
       - ddboat_sim
     profiles: ["sim", "hw"]
