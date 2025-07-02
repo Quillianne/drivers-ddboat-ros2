@@ -9,6 +9,6 @@ RUN apt-get update && \
 
 COPY . /opt/ws/src/drivers-ddboat-ros2
 RUN . /opt/ros/humble/setup.sh && \
-    colcon build --packages-select ros2_ddboat
+    colcon build --packages-select ros2_ddboat --cmake-args -DCMAKE_BUILD_TYPE=Release --parallel-workers 1
 
 CMD ["bash"]

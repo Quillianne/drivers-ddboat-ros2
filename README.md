@@ -220,6 +220,21 @@ source install/setup.bash
 ros2 run ros2_ddboat arduino_node
 ```
 
+#### Raspberry Pi setup
+
+On a real Raspberry Pi you can run the same image.  Map the hardware
+serial and I²C devices with `--device` so the nodes can access them.
+When developing on a PC or in a virtual machine you may create fake
+devices for testing:
+
+```bash
+sudo python3 emulate_devices.py
+```
+
+This command creates `/dev/ttyGPS0`, `/dev/ttyV0`, and other dummy
+serial ports that mirror each other so the ROS2 nodes run without the
+actual sensors.
+
 ### Python tests
 
 The `tests` directory contains small Python scripts that can be run on the host to
