@@ -1,23 +1,44 @@
-import rclpy
-from rclpy.node import Node
-from std_msgs.msg import Int32MultiArray
+"""
+Subscribe to `/encoders` (std_msgs/Int32MultiArray) through rosbridge / roslibpy.
+
+Prerequisites
+-------------
+* rosbridge_server running on port 9090 (see the `rosbridge` service
+  in docker-compose).
+
+Run with:
+
+    python3 test_encoders_node.py
+"""
+
+import time
+import roslibpy
 
 
-def main():
-    rclpy.init()
-    node = Node('test_encoders_node')
-    received = False
+def main() -> None:
+    client = roslibpy.Ros(host='localhost', port=9090)
+    client.run()
 
-    def cb(msg):
-        nonlocal received
-        node.get_logger().info(f'encoders: {msg.data}')
-        received = True
+    def on_encoders(msg):
+        data = msg['data']
+        print(f'encoders: {data}')
+        # After first message, stop listening
+        enc_topic.unsubscribe()
+        client.terminate()
 
-    node.create_subscription(Int32MultiArray, 'encoders', cb, 10)
-    while rclpy.ok() and not received:
-        rclpy.spin_once(node, timeout_sec=1.0)
-    node.destroy_node()
-    rclpy.shutdown()
+    enc_topic = roslibpy.Topic(
+        client,
+        '/encoders',
+        'std_msgs/Int32MultiArray'
+    )
+    enc_topic.subscribe(on_encoders)
+
+    # Keep the script alive until `client.terminate()` is called
+    try:
+        while client.is_connected:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        client.terminate()
 
 
 if __name__ == '__main__':
