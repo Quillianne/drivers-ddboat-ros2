@@ -116,4 +116,17 @@ services:
         ros2 launch ros2_ddboat all_nodes.launch.py"
     profiles: ["sim"]
 
+  # ----------------------------------------------------
+  # ROS 2 BRIDGE – WebSocket interface for remote access
+  # ----------------------------------------------------
+  rosbridge:
+    image: ros:humble-ros-base          # tiny 200 MB image
+    network_mode: host                  # shares LAN with ddboat_sim
+    command: >
+      bash -c "source /opt/ros/humble/setup.bash &&
+              ros2 launch rosbridge_server
+                    rosbridge_websocket_launch.xml"
+    depends_on: [ddboat_sim]
+    profiles: ["sim", "hw"]
+
 
