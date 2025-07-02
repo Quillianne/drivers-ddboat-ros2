@@ -11,4 +11,5 @@ COPY . /opt/ws/src/drivers-ddboat-ros2
 RUN . /opt/ros/humble/setup.sh && \
     colcon build --packages-select ros2_ddboat --cmake-args -DCMAKE_BUILD_TYPE=Release --parallel-workers 1
 
-CMD ["bash"]
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["bash", "-c", "source /opt/ws/install/setup.bash && exec bash"]

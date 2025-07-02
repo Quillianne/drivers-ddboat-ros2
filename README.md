@@ -213,10 +213,10 @@ docker run --rm -it \
   ddboat_ros2
 ```
 
-Inside the container source the workspace and run the desired nodes:
+The entrypoint automatically sources the ROS environment and the workspace,
+so you can run the nodes right away:
 
 ```bash
-source install/setup.bash
 ros2 run ros2_ddboat arduino_node
 ```
 
