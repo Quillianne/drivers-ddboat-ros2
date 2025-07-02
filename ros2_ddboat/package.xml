@@ -2,8 +2,8 @@
 <package format="2">
   <name>ros2_ddboat</name>
   <version>0.0.0</version>
-  <description>ROS2 drivers for DDBoat hardware</description>
-  <maintainer email="maintainer@example.com">Maintainer</maintainer>
+  <description>ROS2 drivers for DDBoat</description>
+  <maintainer email="kili@nbarantal.me">Kilian Barantal</maintainer>
   <license>MIT</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rclcpp</depend>
