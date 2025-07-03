@@ -23,9 +23,6 @@ The encoders node also provides two services:
 requests the previous reading using the `P` command. The polling delay can be
 adjusted via the `delay` parameter which is sent to the device as `Dn;`.
 
-The GPS node also exposes a `pmtk_cmd` service (type `ros2_ddboat/srv/PmtkCmd`) to send raw PMTK strings and receive the module's reply. This service is defined in the `ros2_ddboat` package and only the `gps_node` depends on it.
-
-
 A convenience launch file starts **all** of them at once:
 
 ```

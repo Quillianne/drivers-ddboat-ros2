@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include <chrono>
-#include "ros2_ddboat/srv/pmtk_cmd.hpp"
 
 using namespace std::chrono_literals;
 
@@ -27,10 +26,6 @@ public:
 
     publisher_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("fix", 10);
     timer_ = this->create_wall_timer(200ms, std::bind(&GPSNode::timer_callback, this));
-    pmtk_service_ = this->create_service<ros2_ddboat::srv::PmtkCmd>(
-      "pmtk_cmd",
-      std::bind(&GPSNode::handle_pmtk, this,
-        std::placeholders::_1, std::placeholders::_2));
   }
 
 private:
@@ -111,26 +106,10 @@ private:
     return deg + minutes / 60.0;
   }
 
-  void handle_pmtk(const std::shared_ptr<ros2_ddboat::srv::PmtkCmd::Request> req,
-                   std::shared_ptr<ros2_ddboat::srv::PmtkCmd::Response> res)
-  {
-    if (!serial_.isOpen()) {
-      res->success = false;
-      return;
-    }
-    std::string cmd = req->command;
-    if (cmd.find('\n') == std::string::npos) cmd += "\r\n";
-    serial_.write(cmd);
-    std::string reply = serial_.readline();
-    res->response = reply;
-    res->success = !reply.empty();
-  }
-
   serial::Serial serial_;
   std::string port_;
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Service<ros2_ddboat::srv::PmtkCmd>::SharedPtr pmtk_service_;
 };
 
 int main(int argc, char * argv[])
