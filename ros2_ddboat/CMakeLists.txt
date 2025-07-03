@@ -6,6 +6,7 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 add_subdirectory(third_party/serial)
 
 add_executable(gps_node src/gps_node.cpp)
@@ -14,7 +15,7 @@ ament_target_dependencies(gps_node rclcpp sensor_msgs)
 
 add_executable(arduino_node src/arduino_node.cpp)
 target_link_libraries(arduino_node serial_vendor)
-ament_target_dependencies(arduino_node rclcpp geometry_msgs)
+ament_target_dependencies(arduino_node rclcpp geometry_msgs std_srvs)
 
 add_executable(encoders_node src/encoders_node.cpp)
 target_link_libraries(encoders_node serial_vendor)
