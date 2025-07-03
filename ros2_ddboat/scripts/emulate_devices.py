@@ -162,13 +162,24 @@ def start_encoders(dev: Device) -> None:
 
 
 def start_radio(dev: Device) -> None:
-    def reader():
-        while True:
-            r, _, _ = select.select([dev.master], [], [], 0.5)
-            if dev.master in r:
-                _ = os.read(dev.master, 1024)
-                dev.write("2:1:4:pong\n")
+    """Echo incoming frames with a canned reply and periodically send a ping."""
 
+    def writer() -> None:
+        while True:
+            dev.write("2:1:4:pong\n")
+            time.sleep(1.0)
+
+    def reader() -> None:
+        buf = b""
+        while True:
+            r, _, _ = select.select([dev.master], [], [], 0.1)
+            if dev.master in r:
+                buf += os.read(dev.master, 1024)
+                while b"\n" in buf:
+                    _line, buf = buf.split(b"\n", 1)
+                    dev.write("2:1:4:pong\n")
+
+    threading.Thread(target=writer, daemon=True).start()
     threading.Thread(target=reader, daemon=True).start()
 
 
