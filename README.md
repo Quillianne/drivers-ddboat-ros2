@@ -13,8 +13,8 @@ Everything is intended to run inside a single Docker image on a Raspberry Pi
 |-------------------|---------|----------|
 | `gps_node`        | Publishes GNSS position from the serial NMEA stream | `sensor_msgs/NavSatFix` |
 | `arduino_node`    | Sends motor commands to the Arduino motor‑controller | subscribes `geometry_msgs/Twist` |
-| `encoders_node`   | Publishes raw propeller‑encoder counts and previous values | `std_msgs/Int32MultiArray` |
-| `imu_node`        | Publishes 9‑axis IMU data (mag/gyro/accel) | `sensor_msgs/Imu`, `sensor_msgs/MagneticField` |
+| `encoders_node`   | Publishes raw propeller‑encoder counts | `std_msgs/Int32MultiArray` |
+| `imu_node`        | Publishes 9‑axis IMU data and calibrated heading; service `fast_heading_calibration` | `sensor_msgs/Imu`, `sensor_msgs/MagneticField`, `std_msgs/Float64` |
 | `temperature_node`| Publishes motor temperatures from two TC74 sensors | `sensor_msgs/Temperature` |
 | `radio_node`      | Sends/receives LoRa packets | `std_msgs/String` (`radio_tx`, `radio_rx`) |
 

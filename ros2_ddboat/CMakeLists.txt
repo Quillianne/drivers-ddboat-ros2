@@ -8,6 +8,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 add_subdirectory(third_party/serial)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -30,7 +31,7 @@ target_link_libraries(encoders_node serial_vendor)
 ament_target_dependencies(encoders_node rclcpp std_msgs std_srvs)
 
 add_executable(imu_node src/imu_node.cpp)
-ament_target_dependencies(imu_node rclcpp sensor_msgs)
+ament_target_dependencies(imu_node rclcpp sensor_msgs std_srvs std_msgs)
 
 add_executable(temp_node src/temp_node.cpp)
 ament_target_dependencies(temp_node rclcpp sensor_msgs)
