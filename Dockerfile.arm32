@@ -30,7 +30,8 @@ RUN mkdir src
 RUN wget https://raw.githubusercontent.com/ros2/ros2/${ROS_DISTRO}/ros2.repos
 RUN vcs import src < ros2.repos
 RUN rosdep install --from-paths src --rosdistro ${ROS_DISTRO} -y \
-    --skip-keys "rti-connext-dds-5.3.1 test_tracetools ros-humble-launch"
+    --skip-keys "rti-connext-dds-5.3.1 test_tracetools ros-humble-launch \
+    ros-humble-ament-pycodestyle"
 RUN colcon build --symlink-install
 
 # Overlay workspace for the DDBoat drivers
