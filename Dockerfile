@@ -16,14 +16,21 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential && \
     rm -rf /var/lib/apt/lists/*
 
+ENV MAKEFLAGS="-j1"
+
 # Copy workspace
 COPY . /opt/ws/src/drivers-ddboat-ros2
 
 # Build only your package
 RUN . /opt/ros/humble/setup.sh && \
-    colcon build --packages-select ros2_ddboat \
-                 --cmake-args --no-warn-unused-cli -DCMAKE_BUILD_TYPE=Release \
-                 --parallel-workers 1
+    export CMAKE_BUILD_PARALLEL_LEVEL=1 && \
+    colcon build \
+      --packages-select ros2_ddboat \
+      --executor sequential \
+      --event-handlers console_direct+ \
+      --cmake-args \
+          -DCMAKE_BUILD_TYPE=MinSizeRel \
+          -DBUILD_TESTING=OFF
 
 # Entrypoint
 COPY entrypoint.sh /entrypoint.sh

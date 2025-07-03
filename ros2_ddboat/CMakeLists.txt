@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.5)
 project(ros2_ddboat)
 
 find_package(ament_cmake REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -12,16 +11,10 @@ find_package(diagnostic_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 add_subdirectory(third_party/serial)
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "srv/PmtkCmd.srv"
-)
-
-ament_export_dependencies(rosidl_default_runtime)
 
 add_executable(gps_node src/gps_node.cpp)
 target_link_libraries(gps_node serial_vendor)
-ament_target_dependencies(gps_node rclcpp sensor_msgs rosidl_default_runtime)
-rosidl_target_interfaces(gps_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
+ament_target_dependencies(gps_node rclcpp sensor_msgs)
 
 add_executable(arduino_node src/arduino_node.cpp)
 target_link_libraries(arduino_node serial_vendor)
