@@ -15,7 +15,7 @@ Everything is intended to run inside a single Docker image on a Raspberry Pi
 | `arduino_node`    | Sends motor commands to the Arduino motor‑controller | subscribes `geometry_msgs/Twist` |
 | `encoders_node`   | Publishes raw propeller‑encoder counts | `std_msgs/Int32MultiArray` |
 | `imu_node`        | Publishes 9‑axis IMU data (mag/gyro/accel) | `sensor_msgs/Imu`, `sensor_msgs/MagneticField` |
-| `temperature_node`| Publishes motor temperatures from two TC74 sensors | `sensor_msgs/Temperature` |
+| `temperature_node`| Publishes motor temperatures from two TC74 sensors and exposes standby/config services | `sensor_msgs/Temperature`, diagnostics |
 | `radio_node`      | Sends/receives LoRa packets | `std_msgs/String` (`radio_tx`, `radio_rx`) |
 
 A convenience launch file starts **all** of them at once:

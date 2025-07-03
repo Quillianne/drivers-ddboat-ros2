@@ -6,6 +6,8 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 add_subdirectory(third_party/serial)
 
 add_executable(gps_node src/gps_node.cpp)
@@ -24,7 +26,7 @@ add_executable(imu_node src/imu_node.cpp)
 ament_target_dependencies(imu_node rclcpp sensor_msgs)
 
 add_executable(temp_node src/temp_node.cpp)
-ament_target_dependencies(temp_node rclcpp sensor_msgs)
+ament_target_dependencies(temp_node rclcpp sensor_msgs diagnostic_msgs std_srvs)
 
 add_executable(radio_node src/radio_node.cpp)
 target_link_libraries(radio_node serial_vendor)
