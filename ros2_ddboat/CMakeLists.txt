@@ -25,7 +25,7 @@ rosidl_target_interfaces(gps_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 add_executable(arduino_node src/arduino_node.cpp)
 target_link_libraries(arduino_node serial_vendor)
-ament_target_dependencies(arduino_node rclcpp geometry_msgs)
+ament_target_dependencies(arduino_node rclcpp geometry_msgs std_srvs)
 
 add_executable(encoders_node src/encoders_node.cpp)
 target_link_libraries(encoders_node serial_vendor)
