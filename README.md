@@ -45,60 +45,7 @@ needed.
 
 ## Running on a Raspberry Pi
 
-### With real hardware attached
-
-```bash
-docker run --rm -it --privileged \
-  --device=/dev/ttyGPS0 \   # GPS
-  --device=/dev/ttyACM0 \   # Arduino motor controller
-  --device=/dev/ttyUSB0 \   # Encoders (example)
-  --device=/dev/i2c-1 \     # IMU + temperature sensors
-  ddboat_ros2 \
-  ros2 launch ros2_ddboat all_nodes.launch.py
-```
-
-`--privileged` passes the USB, serial, and I²C devices straight through so the
-drivers can open them.
-
-### Without any hardware (quick simulation)
-
-```bash
-docker run --rm -it --privileged ddboat_ros2 bash -c '
-  source /opt/ros/humble/setup.bash
-  source /opt/ws/install/local_setup.bash
-  ros2 run ros2_ddboat emulate_devices.py &          # create fake /dev/tty* ports
-  ros2 launch ros2_ddboat all_nodes.launch.py        # start every driver
-'
-```
-
-The `emulate_devices.py` helper keeps a set of pseudo‑terminals open and feeds
-dummy data so all nodes start without errors.
-
----
-
-## Running the Python tests
-
-Each test script in `tests/` talks to one driver via ROS 2 messages.  
-Mount the folder read‑only and run the desired test inside the same image:
-
-```bash
-docker run --rm -it -v "$PWD/tests":/tests:ro ddboat_ros2 \
-  bash -c "source /opt/ros/humble/setup.bash && \
-           python3 /tests/test_gps_node.py"
-```
-
-Replace `test_gps_node.py` with any other script to exercise a different node.
-
----
-
-## Development tips
-
-* Use `docker exec -it <container> bash` to enter a running boat and introspect
-  topics with `ros2 topic echo …`.
-
----
-
-## Using docker-compose
+# Using docker-compose
 
 The repository ships with a `docker-compose.yml` that orchestrates the driver
 containers and the optional WebSocket bridge.  Two profiles are provided:
@@ -147,3 +94,7 @@ client.terminate()
 The scripts under `tests/` provide more complete examples that exercise all
 drivers via rosbridge.
 
+## Development tips
+
+* Use `docker exec -it <container> bash` to enter a running boat and introspect
+  topics with `ros2 topic echo …`.
