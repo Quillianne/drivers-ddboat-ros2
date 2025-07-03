@@ -15,9 +15,8 @@ Everything is intended to run inside a single Docker image on a Raspberry Pi
 | `arduino_node`    | Sends motor commands to the Arduino motor‑controller | subscribes `geometry_msgs/Twist` |
 | `encoders_node`   | Publishes raw propeller‑encoder counts | `std_msgs/Int32MultiArray` |
 | `imu_node`        | Publishes 9‑axis IMU data and calibrated heading; service `fast_heading_calibration` | `sensor_msgs/Imu`, `sensor_msgs/MagneticField`, `std_msgs/Float64` |
-| `temperature_node`| Publishes motor temperatures from two TC74 sensors | `sensor_msgs/Temperature` |
+| `temperature_node`| Publishes motor temperatures from two TC74 sensors and exposes standby/config services | `sensor_msgs/Temperature`, diagnostics |
 | `radio_node`      | Sends/receives LoRa packets (`id_src:id_dst:length:msg` frames) | `std_msgs/String` (`radio_tx`, `radio_rx`) |
-
 
 The encoders node also provides two services:
 `/clear_counts` resets the counters with the `C` command and `/request_last`
@@ -25,6 +24,7 @@ requests the previous reading using the `P` command. The polling delay can be
 adjusted via the `delay` parameter which is sent to the device as `Dn;`.
 
 The GPS node also exposes a `pmtk_cmd` service (type `ros2_ddboat/srv/PmtkCmd`) to send raw PMTK strings and receive the module's reply.
+
 
 A convenience launch file starts **all** of them at once:
 
