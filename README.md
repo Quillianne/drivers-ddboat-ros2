@@ -43,6 +43,7 @@ For 32‑bit ARM boards build with the alternate file:
 ```bash
 docker build -t ddboat_ros2 -f Dockerfile.arm32 .
 ```
+This image compiles ROS 2 Humble from source and may take a long time to build.
 
 The image vendors the `wjwwood/serial` library, so no extra host packages are
 needed.
