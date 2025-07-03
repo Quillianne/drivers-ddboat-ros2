@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Exercise *all* DDBoat ROS 2 drivers via rosbridge / roslibpy and print
-every message received.
+every message received. Radio frames use the `id_src:id_dst:length:msg`
+format but only the payload text is shown here.
 
 Run:
     python3 test_all_nodes.py            # rosbridge on localhost:9090

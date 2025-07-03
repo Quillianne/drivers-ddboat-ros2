@@ -3,6 +3,7 @@
 #include <serial/serial.h>
 #include <string>
 #include <chrono>
+#include <sstream>
 
 using namespace std::chrono_literals;
 
@@ -13,6 +14,8 @@ public:
   {
     port_ = this->declare_parameter<std::string>("port", "/dev/ttyLORA1");
     int baud = this->declare_parameter<int>("baud", 115200);
+    id_src_ = this->declare_parameter<int>("id_src", 1);
+    id_dst_ = this->declare_parameter<int>("id_dst", 2);
     serial_.setPort(port_);
     serial_.setBaudrate(baud);
     auto timeout = serial::Timeout::simpleTimeout(1000);
@@ -32,17 +35,51 @@ private:
   void tx_callback(const std_msgs::msg::String::SharedPtr msg)
   {
     if (!serial_.isOpen()) return;
-    serial_.write(msg->data);
+    std::ostringstream frame;
+    frame << id_src_ << ':' << id_dst_ << ':' << msg->data.size() << ':' << msg->data << '\n';
+    serial_.write(frame.str());
+  }
+
+  static std::vector<std::string> split(const std::string &str, char sep)
+  {
+    std::vector<std::string> out;
+    std::string tmp;
+    for (char c : str) {
+      if (c == sep) {
+        out.push_back(tmp);
+        tmp.clear();
+      } else {
+        tmp += c;
+      }
+    }
+    out.push_back(tmp);
+    return out;
   }
 
   void rx_loop()
   {
     if (!serial_.isOpen()) return;
     std::string line = serial_.readline();
-    if (!line.empty()) {
-      std_msgs::msg::String out;
-      out.data = line;
-      pub_->publish(out);
+    while (!line.empty() && (line.back() == '\n' || line.back() == '\r'))
+      line.pop_back();
+    if (line.empty()) return;
+    auto parts = split(line, ':');
+    if (parts.size() < 4) return;
+    try {
+      int src = std::stoi(parts[0]);
+      int dst = std::stoi(parts[1]);
+      int len = std::stoi(parts[2]);
+      std::string payload = parts[3];
+      if ((int)payload.size() > len) {
+        payload = payload.substr(0, len);
+      }
+      if (dst == id_src_) {
+        std_msgs::msg::String out;
+        out.data = payload;
+        pub_->publish(out);
+      }
+    } catch (const std::exception &e) {
+      // ignore malformed line
     }
   }
 
@@ -51,6 +88,8 @@ private:
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_;
   rclcpp::TimerBase::SharedPtr timer_;
+  int id_src_{1};
+  int id_dst_{2};
 };
 
 int main(int argc, char *argv[])
