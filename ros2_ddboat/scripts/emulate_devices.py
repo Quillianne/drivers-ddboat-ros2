@@ -15,14 +15,9 @@ import signal
 # Map device path to a line generator function
 DEVICE_GENS = {
     '/dev/ttyGPS0': lambda: gps_line(),
-    '/dev/ttyGPS1': lambda: gps_line(),
-    '/dev/ttyGPS2': lambda: gps_line(),
     '/dev/ttyV0': lambda: 'OK\n',
     '/dev/ttyENC0': lambda: enc_line(),
-    '/dev/ttyENC1': lambda: enc_line(),
-    '/dev/ttyENC2': lambda: enc_line(),
     '/dev/ttyLORA1': lambda: '2:1:4:pong\n',
-    '/dev/ttyLORA2': lambda: '2:1:4:pong\n',
 }
 
 
