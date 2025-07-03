@@ -14,5 +14,7 @@
   <depend>std_msgs</depend>
   <depend>diagnostic_msgs</depend>
   <depend>std_srvs</depend>
-  <export/>
+  <export>
+    <member_of_group>rosidl_interface_packages</member_of_group>
+  </export>
 </package>
