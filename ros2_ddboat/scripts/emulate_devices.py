@@ -21,8 +21,8 @@ DEVICE_GENS = {
     '/dev/ttyENC0': lambda: enc_line(),
     '/dev/ttyENC1': lambda: enc_line(),
     '/dev/ttyENC2': lambda: enc_line(),
-    '/dev/ttyLORA1': lambda: 'RX:0\n',
-    '/dev/ttyLORA2': lambda: 'RX:0\n',
+    '/dev/ttyLORA1': lambda: '2:1:4:pong\n',
+    '/dev/ttyLORA2': lambda: '2:1:4:pong\n',
 }
 
 

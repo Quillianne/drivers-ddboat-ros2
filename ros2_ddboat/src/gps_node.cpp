@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include "ros2_ddboat/srv/pmtk_cmd.hpp"
 
 using namespace std::chrono_literals;
 
@@ -26,6 +27,10 @@ public:
 
     publisher_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("fix", 10);
     timer_ = this->create_wall_timer(200ms, std::bind(&GPSNode::timer_callback, this));
+    pmtk_service_ = this->create_service<ros2_ddboat::srv::PmtkCmd>(
+      "pmtk_cmd",
+      std::bind(&GPSNode::handle_pmtk, this,
+        std::placeholders::_1, std::placeholders::_2));
   }
 
 private:
@@ -35,10 +40,16 @@ private:
       return;
     }
     std::string line = serial_.readline();
-    if (line.rfind("$GPGLL", 0) == 0) {
+    if (line.rfind("$GPGLL", 0) == 0 || line.rfind("$GPRMC", 0) == 0) {
       auto msg = sensor_msgs::msg::NavSatFix();
       double lat = 0.0, lon = 0.0;
-      if (parse_gpgll(line, lat, lon)) {
+      bool ok = false;
+      if (line.rfind("$GPGLL", 0) == 0) {
+        ok = parse_gpgll(line, lat, lon);
+      } else if (line.rfind("$GPRMC", 0) == 0) {
+        ok = parse_gprmc(line, lat, lon);
+      }
+      if (ok) {
         msg.latitude = lat;
         msg.longitude = lon;
         msg.header.stamp = now();
@@ -58,6 +69,20 @@ private:
     if (parts[2] == "S") lat = -lat;
     lon = parse_ddmm(parts[3]);
     if (parts[4] == "W") lon = -lon;
+    return true;
+  }
+
+  static bool parse_gprmc(const std::string &line, double &lat, double &lon)
+  {
+    // $GPRMC,hhmmss,A,llll.ll,a,yyyyy.yy,a,...
+    auto parts = split(line, ',');
+    if (parts.size() < 7 || parts[2] != "A") {
+      return false;
+    }
+    lat = parse_ddmm(parts[3]);
+    if (parts[4] == "S") lat = -lat;
+    lon = parse_ddmm(parts[5]);
+    if (parts[6] == "W") lon = -lon;
     return true;
   }
 
@@ -86,10 +111,26 @@ private:
     return deg + minutes / 60.0;
   }
 
+  void handle_pmtk(const std::shared_ptr<ros2_ddboat::srv::PmtkCmd::Request> req,
+                   std::shared_ptr<ros2_ddboat::srv::PmtkCmd::Response> res)
+  {
+    if (!serial_.isOpen()) {
+      res->success = false;
+      return;
+    }
+    std::string cmd = req->command;
+    if (cmd.find('\n') == std::string::npos) cmd += "\r\n";
+    serial_.write(cmd);
+    std::string reply = serial_.readline();
+    res->response = reply;
+    res->success = !reply.empty();
+  }
+
   serial::Serial serial_;
   std::string port_;
   rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Service<ros2_ddboat::srv::PmtkCmd>::SharedPtr pmtk_service_;
 };
 
 int main(int argc, char * argv[])
