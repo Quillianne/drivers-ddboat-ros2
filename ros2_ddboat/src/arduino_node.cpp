@@ -18,9 +18,19 @@ public:
       serial_.open();
     } catch (const std::exception &e) {
       RCLCPP_ERROR(get_logger(), "Failed to open %s: %s", port_.c_str(), e.what());
+      if (port_ == "/dev/ttyV0") {
+        RCLCPP_WARN(get_logger(), "Retrying with /dev/ttyACM0");
+        try {
+          serial_.setPort("/dev/ttyACM0");
+          serial_.open();
+        } catch (const std::exception &e2) {
+          RCLCPP_ERROR(get_logger(), "Failed to open /dev/ttyACM0: %s", e2.what());
+        }
+      }
     }
     sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
       "motors_cmd", 10, std::bind(&ArduinoNode::cmd_callback, this, std::placeholders::_1));
+    rclcpp::on_shutdown([this]() { this->send_stop(); });
   }
 
 private:
@@ -38,6 +48,14 @@ private:
     char buf[32];
     snprintf(buf, sizeof(buf), "M%c%03d%c%03d;", dirl, cmdl, dirr, cmdr);
     serial_.write(std::string(buf));
+  }
+
+  void send_stop()
+  {
+    if (!serial_.isOpen()) {
+      return;
+    }
+    serial_.write(std::string("M 000 000;"));
   }
 
   serial::Serial serial_;
