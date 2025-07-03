@@ -38,6 +38,12 @@ ros2 launch ros2_ddboat all_nodes.launch.py
 docker build -t ddboat_ros2 .
 ```
 
+For 32‑bit ARM boards build with the alternate file:
+
+```bash
+docker build -t ddboat_ros2 -f Dockerfile.arm32 .
+```
+
 The image vendors the `wjwwood/serial` library, so no extra host packages are
 needed.
 
