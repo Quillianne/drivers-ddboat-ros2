@@ -22,6 +22,15 @@ public:
       serial_.open();
     } catch (const std::exception &e) {
       RCLCPP_ERROR(get_logger(), "Failed to open %s: %s", port_.c_str(), e.what());
+      if (port_ == "/dev/ttyV0") {
+        RCLCPP_WARN(get_logger(), "Retrying with /dev/ttyACM0");
+        try {
+          serial_.setPort("/dev/ttyACM0");
+          serial_.open();
+        } catch (const std::exception &e2) {
+          RCLCPP_ERROR(get_logger(), "Failed to open /dev/ttyACM0: %s", e2.what());
+        }
+      }
     }
     if (serial_.isOpen() && calibrate) {
       std::string res = calibrate_esc();
@@ -59,6 +68,7 @@ public:
       serial_.write("M 000 000;");
       serial_.close();
     }
+
   }
 
 private:
