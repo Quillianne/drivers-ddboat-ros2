@@ -18,6 +18,8 @@ Everything is intended to run inside a single Docker image on a Raspberry Pi
 | `temperature_node`| Publishes motor temperatures from two TC74 sensors | `sensor_msgs/Temperature` |
 | `radio_node`      | Sends/receives LoRa packets | `std_msgs/String` (`radio_tx`, `radio_rx`) |
 
+The GPS node also exposes a `pmtk_cmd` service (type `ros2_ddboat/srv/PmtkCmd`) to send raw PMTK strings and receive the module's reply.
+
 A convenience launch file starts **all** of them at once:
 
 ```
