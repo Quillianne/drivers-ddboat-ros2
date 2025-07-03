@@ -91,6 +91,24 @@ def main() -> None:
     radio_pub.publish(roslibpy.Message({"data": "ping"}))
     radio_pub.unadvertise()
 
+    # Exercise services from each node
+    svc_specs = [
+        ("/clear_counts", "std_srvs/srv/Trigger", {}),
+        ("/request_last", "std_srvs/srv/Trigger", {}),
+        ("/pmtk_cmd", "ros2_ddboat/srv/PmtkCmd", {"command": "PMTK605"}),
+        ("/fast_heading_calibration", "std_srvs/srv/Trigger", {}),
+        ("/set_standby", "std_srvs/srv/SetBool", {"data": False}),
+        ("/get_config", "std_srvs/srv/Trigger", {}),
+        ("/calibrate_esc", "std_srvs/srv/Trigger", {}),
+    ]
+    for name, srv_type, payload in svc_specs:
+        try:
+            srv = roslibpy.Service(client, name, srv_type)
+            res = srv.call(roslibpy.ServiceRequest(payload), timeout=5)
+            print(f"{name}: {res}")
+        except Exception as e:
+            print(f"{name} failed: {e}")
+
     # ----------------------------------------------------------------------
     # Wait
     # ----------------------------------------------------------------------

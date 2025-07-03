@@ -34,11 +34,32 @@ def main() -> None:
         twist_topic.publish(roslibpy.Message(twist_msg))
         time.sleep(0.1)
 
+
+    # Exercise all available services
+    services = [
+        'calibrate_esc',
+        'get_cmd_motor',
+        'get_cmd_motor_esc',
+        'get_rc_chan',
+        'get_raw_rc_chan',
+        'get_status',
+        'get_energy_saver',
+    ]
+
+    for name in services:
+        srv = roslibpy.Service(client, f'/{name}', 'std_srvs/srv/Trigger')
+        try:
+            res = srv.call(roslibpy.ServiceRequest(), timeout=5)
+            print(f'{name}: success={res["success"]} msg={res.get("message", "")}')
+        except Exception as e:
+            print(f'{name} call failed: {e}')
+
     # Clean up from a separate thread
     def _shutdown():
         print('Shutting down: unadvertising and terminating client')
         twist_topic.unadvertise()
         client.terminate()
+
     threading.Thread(target=_shutdown, daemon=True).start()
 
 

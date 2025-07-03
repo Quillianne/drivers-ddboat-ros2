@@ -22,10 +22,19 @@ def main() -> None:
 
     def on_imu(msg):
         print(f"IMU msg received: {msg}")
+
+        calib_srv = roslibpy.Service(client, '/fast_heading_calibration', 'std_srvs/srv/Trigger')
+        try:
+            res = calib_srv.call(roslibpy.ServiceRequest(), timeout=5)
+            print(f'fast_heading_calibration: {res}')
+        except Exception as e:
+            print(f'fast_heading_calibration failed: {e}')
+
         # Clean up in a background thread
         def _shutdown():
             imu_topic.unsubscribe()
             client.terminate()
+
         threading.Thread(target=_shutdown, daemon=True).start()
 
     imu_topic = roslibpy.Topic(

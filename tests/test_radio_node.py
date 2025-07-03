@@ -39,9 +39,12 @@ def main() -> None:
     rx_topic = roslibpy.Topic(client, '/radio_rx', 'std_msgs/String')
     rx_topic.subscribe(on_rx)
 
-    # Publish a test message
-    tx_msg = {'data': 'ping'}
-    tx_topic.publish(roslibpy.Message(tx_msg))
+    # Publish a few test messages like the original driver did
+    for i in range(3):
+        tx_msg = {'data': f'ping {i+1}'}
+        print(f'sending: {tx_msg["data"]}')
+        tx_topic.publish(roslibpy.Message(tx_msg))
+        time.sleep(0.1)
 
     # Keep the script alive until the callback terminates the client
     try:
