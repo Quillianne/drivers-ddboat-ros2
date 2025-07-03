@@ -175,7 +175,7 @@ def start_radio(dev: Device) -> None:
 def main() -> None:
     gps = Device("/dev/ttyGPS0")
     arduino = Device("/dev/ttyV0")
-    enc = Device("/dev/ttyENC0")
+    enc = Device("/dev/ttyENC1")
     radio = Device("/dev/ttyLORA1")
 
     start_gps(gps)

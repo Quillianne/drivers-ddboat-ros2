@@ -52,7 +52,7 @@ services:
     devices:
       - ${GPS_DEV:-/dev/ttyGPS0}:/dev/ttyGPS0
       - ${ARDUINO_DEV:-/dev/ttyV0}:/dev/ttyV0
-      - ${ENC_DEV:-/dev/ttyENC0}:/dev/ttyENC0
+      - ${ENC_DEV:-/dev/ttyENC0}:/dev/ttyENC1
       - ${LORA_DEV:-/dev/ttyLORA1}:/dev/ttyLORA1
       - /dev/i2c-1:/dev/i2c-1
     command: ros2 launch ros2_ddboat all_nodes.launch.py
