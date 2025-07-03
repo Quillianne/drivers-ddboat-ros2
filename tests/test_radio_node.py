@@ -1,5 +1,7 @@
 """
-Publish to `/radio_tx` and subscribe to `/radio_rx` (std_msgs/String) using rosbridge / roslibpy.
+Publish to `/radio_tx` and subscribe to `/radio_rx` (std_msgs/String) using
+rosbridge / roslibpy.  Frames on the wire follow the `id_src:id_dst:length:msg`
+format and this script simply deals with the payload text.
 
 Prerequisites
 -------------

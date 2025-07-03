@@ -16,7 +16,7 @@ Everything is intended to run inside a single Docker image on a Raspberry Pi
 | `encoders_node`   | Publishes raw propeller‑encoder counts | `std_msgs/Int32MultiArray` |
 | `imu_node`        | Publishes 9‑axis IMU data (mag/gyro/accel) | `sensor_msgs/Imu`, `sensor_msgs/MagneticField` |
 | `temperature_node`| Publishes motor temperatures from two TC74 sensors | `sensor_msgs/Temperature` |
-| `radio_node`      | Sends/receives LoRa packets | `std_msgs/String` (`radio_tx`, `radio_rx`) |
+| `radio_node`      | Sends/receives LoRa packets (`id_src:id_dst:length:msg` frames) | `std_msgs/String` (`radio_tx`, `radio_rx`) |
 
 A convenience launch file starts **all** of them at once:
 
