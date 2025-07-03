@@ -24,6 +24,16 @@ def main() -> None:
         lat = msg['latitude']
         lon = msg['longitude']
         print(f"Received fix: {lat:.6f}, {lon:.6f}")
+
+        # Try a PMTK command service call
+        pmtk_srv = roslibpy.Service(client, '/pmtk_cmd', 'ros2_ddboat/srv/PmtkCmd')
+        req = roslibpy.ServiceRequest({'command': 'PMTK605'})  # query firmware ver
+        try:
+            res = pmtk_srv.call(req, timeout=5)
+            print(f'pmtk_cmd response: {res.get("response", "")}')
+        except Exception as e:
+            print(f'pmtk_cmd failed: {e}')
+
         # Clean up in a background thread to avoid joining the current thread
         def _shutdown():
             fix_topic.unsubscribe()
