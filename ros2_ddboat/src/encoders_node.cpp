@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 class EncodersNode : public rclcpp::Node {
 public:
   EncodersNode() : Node("encoders_node"), serial_() {
-    port_ = this->declare_parameter<std::string>("port", "/dev/ttyENC0");
+    port_ = this->declare_parameter<std::string>("port", "/dev/ttyENC1");
     int baud = this->declare_parameter<int>("baud", 115200);
     delay_ms_ = this->declare_parameter<int>("delay", 100);
     serial_.setPort(port_);
