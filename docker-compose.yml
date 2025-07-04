@@ -33,7 +33,7 @@
 
 x-ddboat-base: &ddboat_base
   build: .                      # build the ddboat_ros2 image from repo root
-  image: ddboat_ros2:latest
+  image: quillianne/ddboat:humble-armv7
   privileged: true              # serial, I²C, etc.
   network_mode: host            # DDS multicast on host LAN
   ipc: host                     # share /dev/shm for Cyclone DDS
@@ -134,12 +134,10 @@ services:
     environment:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=0
-    image: ddboat_ros2:latest
+    image: quillianne/ddboat:humble-armv7
     network_mode: host
     command: >
-      bash -c "apt-get update && \
-               DEBIAN_FRONTEND=noninteractive apt-get install -y ros-humble-rosbridge-suite && \
-               source /opt/ros/humble/setup.bash && \
+      bash -c "source /opt/ros/humble/setup.bash && \
                ros2 launch rosbridge_server rosbridge_websocket_launch.xml"
     depends_on:
       - ddboat_sim
