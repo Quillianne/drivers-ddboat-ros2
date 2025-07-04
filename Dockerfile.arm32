@@ -91,7 +91,7 @@ EOF
 
 # Installer les dépendances système requises pour les packages ROS2 (via rosdep)
 RUN rosdep install --from-paths /opt/ws/src --ignore-src -y --rosdistro humble \
-    --skip-keys "fastcdr rti-connext-dds-6.0.1 urdfdom_headers"
+    --skip-keys "fastcdr rti-connext-dds-6.0.1 urdfdom_headers ros-humble-ament-copyright"
 
 # Compiler ROS 2 (variant ros-base minimal) avec Cyclone DDS comme RMW par défaut
 RUN . /opt/ws && \
