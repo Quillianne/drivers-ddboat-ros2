@@ -1,114 +1,38 @@
-# Base Ubuntu 22.04 (Jammy) en 32 bits (armhf)
-FROM arm32v7/ubuntu:22.04
+FROM hrrymtthews/arm7-ros2-humble-base
 
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Fixer la locale en UTF-8 (pour éviter les warnings)
-RUN apt-get update && apt-get install -y locales && \
-    locale-gen en_US.UTF-8 && \
-    update-locale LANG=en_US.UTF-8
-
-ENV LANG=en_US.UTF-8
-
-# Répertoire de travail du workspace ROS 2
 WORKDIR /opt/ws
 
-# Installer outils de build et dépendances de base (colcon, vcstool, rosdep, etc.)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential cmake git wget \
-    python3-colcon-common-extensions python3-vcstool python3-rosdep2 curl && \
+# --- new: install Cyclone DDS RMW (and rosbridge, optional) -------------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ros-humble-rmw-cyclonedds-cpp \
+        ros-humble-rosbridge-suite && \
+    rm -rf /var/lib/apt/lists/*
+# ------------------------------------------------------------------------
+
+# Build tools for any native libs your packages need
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential && \
     rm -rf /var/lib/apt/lists/*
 
-# Initialiser rosdep (pour installer dépendances système des sources ROS 2)
-RUN rosdep init && rosdep update
+ENV MAKEFLAGS="-j1"
 
-# Récupérer les sources ROS 2 Humble minimal (variant ros-base + CycloneDDS)
-RUN vcs import /opt/ws/src <<EOF  
-repositories:
-  # Core build tools and client libraries
-  ament/ament_cmake: {type: git, url: https://github.com/ament/ament_cmake.git, version: humble}
-  ament/ament_index: {type: git, url: https://github.com/ament/ament_index.git, version: humble}
-  ament/ament_lint: {type: git, url: https://github.com/ament/ament_lint.git, version: humble}
-  ament/ament_package: {type: git, url: https://github.com/ament/ament_package.git, version: humble}
-  # Eclipse Cyclone DDS (RMW implémentation choisie) + middleware partagés
-  eclipse-cyclonedds/cyclonedds: {type: git, url: https://github.com/eclipse-cyclonedds/cyclonedds.git, version: releases/0.10.x}
-  eclipse-iceoryx/iceoryx: {type: git, url: https://github.com/eclipse-iceoryx/iceoryx.git, version: release_2.0}
-  # Outils Python OSRF requis
-  osrf/osrf_pycommon: {type: git, url: https://github.com/osrf/osrf_pycommon.git, version: master}
-  # Bibliothèques essentielles ROS
-  ros/class_loader: {type: git, url: https://github.com/ros/class_loader.git, version: humble}
-  ros/kdl_parser: {type: git, url: https://github.com/ros/kdl_parser.git, version: humble}
-  ros/pluginlib: {type: git, url: https://github.com/ros/pluginlib.git, version: humble}
-  ros/resource_retriever: {type: git, url: https://github.com/ros/resource_retriever.git, version: humble}
-  ros/robot_state_publisher: {type: git, url: https://github.com/ros/robot_state_publisher.git, version: humble}
-  ros/ros_environment: {type: git, url: https://github.com/ros/ros_environment.git, version: humble}
-  ros/urdfdom: {type: git, url: https://github.com/ros/urdfdom.git, version: humble}
-  ros/urdfdom_headers: {type: git, url: https://github.com/ros/urdfdom_headers.git, version: humble}
-  # ROS 2 core (rcl, rclcpp, rmw, etc.) et common interfaces
-  ros2/ament_cmake_ros: {type: git, url: https://github.com/ros2/ament_cmake_ros.git, version: humble}
-  ros2/common_interfaces: {type: git, url: https://github.com/ros2/common_interfaces.git, version: humble}
-  ros2/console_bridge_vendor: {type: git, url: https://github.com/ros2/console_bridge_vendor.git, version: humble}
-  ros2/eigen3_cmake_module: {type: git, url: https://github.com/ros2/eigen3_cmake_module.git, version: humble}
-  ros2/geometry2: {type: git, url: https://github.com/ros2/geometry2.git, version: humble}
-  ros2/launch: {type: git, url: https://github.com/ros2/launch.git, version: humble}
-  ros2/launch_ros: {type: git, url: https://github.com/ros2/launch_ros.git, version: humble}
-  ros2/libyaml_vendor: {type: git, url: https://github.com/ros2/libyaml_vendor.git, version: humble}
-  ros2/message_filters: {type: git, url: https://github.com/ros2/message_filters.git, version: humble}
-  ros2/orocos_kdl_vendor: {type: git, url: https://github.com/ros2/orocos_kdl_vendor.git, version: humble}
-  ros2/pybind11_vendor: {type: git, url: https://github.com/ros2/pybind11_vendor.git, version: humble}
-  ros2/python_cmake_module: {type: git, url: https://github.com/ros2/python_cmake_module.git, version: humble}
-  ros2/rcl: {type: git, url: https://github.com/ros2/rcl.git, version: humble}
-  ros2/rcl_interfaces: {type: git, url: https://github.com/ros2/rcl_interfaces.git, version: humble}
-  ros2/rcl_logging: {type: git, url: https://github.com/ros2/rcl_logging.git, version: humble}
-  ros2/rclcpp: {type: git, url: https://github.com/ros2/rclcpp.git, version: humble}
-  ros2/rclpy: {type: git, url: https://github.com/ros2/rclpy.git, version: humble}
-  ros2/rcpputils: {type: git, url: https://github.com/ros2/rcpputils.git, version: humble}
-  ros2/rcutils: {type: git, url: https://github.com/ros2/rcutils.git, version: humble}
-  ros2/realtime_support: {type: git, url: https://github.com/ros2/realtime_support.git, version: humble}
-  ros2/rmw: {type: git, url: https://github.com/ros2/rmw.git, version: humble}
-  ros2/rmw_cyclonedds: {type: git, url: https://github.com/ros2/rmw_cyclonedds.git, version: humble}
-  ros2/rmw_dds_common: {type: git, url: https://github.com/ros2/rmw_dds_common.git, version: humble}
-  ros2/rmw_implementation: {type: git, url: https://github.com/ros2/rmw_implementation.git, version: humble}
-  ros2/ros2cli: {type: git, url: https://github.com/ros2/ros2cli.git, version: humble}
-  ros2/ros2cli_common_extensions: {type: git, url: https://github.com/ros2/ros2cli_common_extensions.git, version: humble}
-  ros2/rosbag2: {type: git, url: https://github.com/ros2/rosbag2.git, version: humble}
-  ros2/rosidl: {type: git, url: https://github.com/ros2/rosidl.git, version: humble}
-  ros2/rosidl_dds: {type: git, url: https://github.com/ros2/rosidl_dds.git, version: humble}
-  ros2/rosidl_defaults: {type: git, url: https://github.com/ros2/rosidl_defaults.git, version: humble}
-  ros2/rosidl_python: {type: git, url: https://github.com/ros2/rosidl_python.git, version: humble}
-  ros2/rosidl_runtime_py: {type: git, url: https://github.com/ros2/rosidl_runtime_py.git, version: humble}
-  ros2/rosidl_typesupport: {type: git, url: https://github.com/ros2/rosidl_typesupport.git, version: humble}
-  ros2/rpyutils: {type: git, url: https://github.com/ros2/rpyutils.git, version: humble}
-  ros2/spdlog_vendor: {type: git, url: https://github.com/ros2/spdlog_vendor.git, version: humble}
-  ros2/sros2: {type: git, url: https://github.com/ros2/sros2.git, version: humble}
-  ros2/tinyxml2_vendor: {type: git, url: https://github.com/ros2/tinyxml2_vendor.git, version: humble}
-  ros2/tinyxml_vendor: {type: git, url: https://github.com/ros2/tinyxml_vendor.git, version: humble}
-  ros2/tlsf: {type: git, url: https://github.com/ros2/tlsf.git, version: humble}
-  ros2/unique_identifier_msgs: {type: git, url: https://github.com/ros2/unique_identifier_msgs.git, version: humble}
-  ros2/urdf: {type: git, url: https://github.com/ros2/urdf.git, version: humble}
-  ros2/yaml_cpp_vendor: {type: git, url: https://github.com/ros2/yaml_cpp_vendor.git, version: humble}
-EOF
+# Copy workspace
+COPY . /opt/ws/src/drivers-ddboat-ros2
 
-# Installer les dépendances système requises pour les packages ROS2 (via rosdep)
-RUN rosdep install --from-paths /opt/ws/src --ignore-src -y --rosdistro humble \
-    --skip-keys "fastcdr rti-connext-dds-6.0.1 urdfdom_headers ros-humble-ament-copyright"
+# Build only your package
+RUN . /opt/ros/humble/setup.sh && \
+    export CMAKE_BUILD_PARALLEL_LEVEL=1 && \
+    colcon build \
+      --packages-select ros2_ddboat \
+      --executor sequential \
+      --event-handlers console_direct+ \
+      --cmake-args \
+          -DCMAKE_BUILD_TYPE=MinSizeRel \
+          -DBUILD_TESTING=OFF
 
-# Compiler ROS 2 (variant ros-base minimal) avec Cyclone DDS comme RMW par défaut
-RUN . /opt/ws && \
-    colcon build --symlink-install \
-    --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
-    -DRMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
-# ** À partir d'ici, l'environnement ROS2 de base est prêt **
-
-# Copier le code du package utilisateur dans le workspace
-COPY ./ /opt/ws/src/drivers-ddboat-ros2
-
-# Sourcer l'environnement ROS 2 et compiler le package ros2_ddboat
-RUN . install/setup.sh && \
-    colcon build --packages-select ros2_ddboat --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
-
-# Entrypoint du conteneur (fourni par l'utilisateur)
+# Entrypoint
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
