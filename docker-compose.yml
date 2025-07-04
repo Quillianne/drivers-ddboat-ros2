@@ -31,12 +31,26 @@
 # so the ROS 2 drivers remain unchanged.
 #############################
 
+# allow override via .env or shell exported ARCH
+x-defaults: &defaults
+  # image tag suffix
+  image_arch: "${ARCH:-armv7}"
+  # platform string for build/run
+  platform: "linux/${ARCH:-armv7}"
+
 x-ddboat-base: &ddboat_base
-  build: .                      # build the ddboat_ros2 image from repo root
-  image: quillianne/ddboat:humble-armv7
-  privileged: true              # serial, I²C, etc.
-  network_mode: host            # DDS multicast on host LAN
-  ipc: host                     # share /dev/shm for Cyclone DDS
+  build:
+    context: .
+    # tell buildx which arch to target
+    platform: *defaults.platform
+    args:
+      # if your Dockerfile uses an ARG to switch install steps
+      TARGET_ARCH: *defaults.image_arch
+  image: "quillianne/ddboat:humble-${ARCH:-armv7}"
+  platform: *defaults.platform    # instruct runtime which arch to pull
+  privileged: true
+  network_mode: host
+  ipc: host
   tty: true
   environment:
     - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
@@ -130,12 +144,23 @@ services:
   # ROS 2 BRIDGE – WebSocket interface for remote access
   # --------------------------------------------------
   rosbridge:
-    ipc: host
-    environment:
-      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-      - ROS_DOMAIN_ID=0
-    image: quillianne/ddboat:humble-armv7
+  
+    build:
+      context: .
+      # tell buildx which arch to target
+      platform: *defaults.platform
+      args:
+        # if your Dockerfile uses an ARG to switch install steps
+        TARGET_ARCH: *defaults.image_arch
+    image: "quillianne/ddboat:humble-${ARCH:-armv7}"
+    platform: *defaults.platform    # instruct runtime which arch to pull
+    privileged: true
     network_mode: host
+    ipc: host
+    tty: true
+    environment:
+    - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    - ROS_DOMAIN_ID=0
     command: >
       bash -c "source /opt/ros/humble/setup.bash && \
                ros2 launch rosbridge_server rosbridge_websocket_launch.xml"
