@@ -38,7 +38,6 @@ x-defaults: &defaults
 
 x-ddboat-base: &ddboat_base
   image: "quillianne/ddboat:humble-${ARCH:-armv7}"
-  platform: *defaults.platform
   privileged: true
   network_mode: host
   ipc: host
