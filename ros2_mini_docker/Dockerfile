@@ -2,7 +2,7 @@
 # LAYER 0: Base image for ROS 2 Humble   #
 ##########################################
 
-FROM --platform=linux/arm/v7 ubuntu:22.04 as layer0
+FROM --platform=linux/arm/v7 ubuntu:22.04 AS layer0
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=en_US.UTF-8 \
@@ -35,7 +35,7 @@ RUN rosdep init && rosdep update
 # STAGE 1: Build ROS 2 Humble        #
 ######################################
 
-FROM layer0 as layer1
+FROM layer0 AS layer1
 
 WORKDIR /ros2_ws
 RUN mkdir src
@@ -70,10 +70,12 @@ RUN apt-get update && rosdep install -y \
 
 RUN colcon build \
     --symlink-install \
+    --install-base /opt/ros/humble \
+    --merge-install \
     --cmake-args \
-    -DCMAKE_BUILD_TYPE=MinSizeRel \
-    -DCMAKE_INSTALL_PREFIX=/opt/ros/humble \
-    -DBUILD_TESTING=OFF \
-    -DBUILD_EXAMPLES=OFF
+      -DCMAKE_BUILD_TYPE=MinSizeRel \
+      -DCMAKE_INSTALL_PREFIX=/opt/ros/humble \
+      -DBUILD_TESTING=OFF \
+      -DBUILD_EXAMPLES=OFF
 
 CMD ["/bin/bash"]
