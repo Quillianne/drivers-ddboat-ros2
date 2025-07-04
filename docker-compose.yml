@@ -37,11 +37,6 @@ x-defaults: &defaults
   platform: "linux/${ARCH:-armv7}"
 
 x-ddboat-base: &ddboat_base
-  build:
-    context: .
-    platform: *defaults.platform
-    args:
-      TARGET_ARCH: *defaults.image_arch
   image: "quillianne/ddboat:humble-${ARCH:-armv7}"
   platform: *defaults.platform
   privileged: true
