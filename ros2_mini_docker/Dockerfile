@@ -41,13 +41,17 @@ WORKDIR /ros2_ws
 RUN mkdir src
 
 
-RUN rosinstall_generator rclcpp sensor_msgs geometry_msgs std_msgs diagnostic_msgs std_srvs \
-    ros2cli ros2launch launch launch_ros ament_cmake rosbridge_suite\
+RUN rosinstall_generator \
+    rclcpp sensor_msgs geometry_msgs std_msgs diagnostic_msgs std_srvs \
+    rosbridge_suite ament_cmake \
+    ros2cli ros2run ros2launch ros2pkg ros2node ros2param \
+    ros2service ros2topic ros2component ros2action \
+    launch launch_ros \
     --rosdistro humble \
     --deps \
     --tar \
-    > humble-ros_base.repos \
-    && vcs import src < humble-ros_base.repos
+    > humble.repos && \
+    vcs import src < humble.repos
 
 
 # For intalling ros_base, uncomment the following lines
