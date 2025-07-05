@@ -31,11 +31,58 @@ ros2 launch ros2_ddboat all_nodes.launch.py
 
 ---
 
+## Onboarding on Raspberry Pi
+
+To set up Docker and our project on a fresh Raspberry Pi OS installation, run:
+
+```bash
+# Remove any conflicting container packages
+for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do
+  sudo apt-get remove -y $pkg
+done
+
+# Add Docker's official GPG key
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/raspbian/gpg \
+  -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the Docker repository
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+  https://download.docker.com/linux/raspbian \
+  $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+# Install Docker and related tools
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io \
+  docker-buildx-plugin docker-compose-plugin
+
+# Clone this repository and add your user to the docker group
+git clone https://github.com/Quillianne/drivers-ddboat-ros2
+cd drivers-ddboat-ros2
+sudo usermod -aG docker $USER
+newgrp docker  # apply group change without logout (optional)
+```
+
+you can then either build the DDBOAT Docker image or pull it.
+
+---
+
 ## Build the Docker image
 
 ```bash
 # from the repository root
 docker build -t ddboat_ros2 .
+```
+
+For 64‑bit ARM boards build with the alternate file if you want a lighter image:
+
+```bash
+docker build -t ddboat_ros2 -f old_Dockerfile .
 ```
 
 The image vendors the `wjwwood/serial` library, so no extra host packages are
