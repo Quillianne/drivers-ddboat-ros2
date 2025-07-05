@@ -1,4 +1,5 @@
-FROM quillianne/ros2
+ARG ROS2_IMAGE=quillianne/ros2
+FROM ${ROS2_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
