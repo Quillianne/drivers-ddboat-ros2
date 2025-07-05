@@ -1,7 +1,10 @@
 #!/bin/bash
 set -e
 
-IMAGE_NAME="quillianne/ddboat"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/.env"
+
+IMAGE_NAME="${IMAGE}"
 TAG="latest"
 
 echo "🚧 Building multiarch image for $IMAGE_NAME:$TAG..."

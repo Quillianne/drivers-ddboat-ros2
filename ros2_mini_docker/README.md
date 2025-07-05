@@ -5,6 +5,9 @@ On my M4 PRO, building took approximatively 40 minutes for armhf (and 4min for a
 
 It is better to build them on a PC and not on the raspberry pi
 
+The `build_and_push.sh` script reads the target repository from `../.env`.
+Edit `ROS2_IMAGE` in that file if you plan to push to your own registry.
+
 ---
 
 ## Prerequisites

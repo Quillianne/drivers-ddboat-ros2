@@ -1,7 +1,10 @@
 #!/bin/bash
 set -e
 
-IMAGE_NAME="quillianne/ros2"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../.env"
+
+IMAGE_NAME="${ROS2_IMAGE}"
 TAG="latest"
 
 echo "🚧 Building multiarch image for $IMAGE_NAME:$TAG..."

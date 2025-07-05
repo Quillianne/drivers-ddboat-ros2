@@ -33,7 +33,7 @@
 
 
 x-ddboat-base: &ddboat_base
-  image: "quillianne/ddboat"
+  image: "${IMAGE:-quillianne/ddboat}"
   privileged: true
   network_mode: host
   ipc: host
@@ -134,7 +134,7 @@ services:
     environment:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=0
-    image: "quillianne/ddboat"
+    image: "${IMAGE:-quillianne/ddboat}"
     network_mode: host
     command: >
       bash -c "source /opt/ros/humble/setup.bash && \

@@ -70,6 +70,17 @@ newgrp docker  # apply group change without logout (optional)
 
 you can then either build the DDBOAT Docker image or pull it.
 
+### Configure image names
+
+The build scripts and `docker-compose.yml` read the Docker repository names
+from `.env` at the project root. Adjust these values if you push images to
+your own registry:
+
+```bash
+IMAGE=quillianne/ddboat
+ROS2_IMAGE=quillianne/ros2
+```
+
 ---
 
 ## Build the Docker image
