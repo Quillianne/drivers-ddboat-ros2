@@ -1,7 +1,7 @@
 # DDBoat ROS 2 base image Build Guide
 
 This guide walks you through building a Docker image for ROS 2 Humble on 32-bit ARM (armhf) and multi-architecture variants using Docker Buildx, then running it on a host or pushing it to a registry.
-On my M4 PRO, building took approximatively 40 minutes for armhf.
+On my M4 PRO, building took approximatively 40 minutes for armhf (and 4min for arm64)
 
 It is better to build them on a PC and not on the raspberry pi
 
@@ -13,7 +13,7 @@ It is better to build them on a PC and not on the raspberry pi
    - Docker ≥ 20.10  
    - Buildx enabled (bundled with Docker Desktop; on Linux see Docker docs).
 
-2. **QEMU emulators (optional, for emulation)**  
+2. **QEMU emulators (optional, for emulation / multi arch)**  
    ```bash
    docker run --privileged --rm tonistiigi/binfmt --install all
    ```
@@ -49,14 +49,18 @@ docker buildx inspect --bootstrap | grep Platforms
 
 ## 2. Build multi-arch images
 
+You have to create a ros2 repo in DockerHub repo or any other name but you have to modify following commands.
 Build both armhf (arm/v7) and arm64 variants and push to a registry:
+
+!!! Be aware to be in your ros2_mini_docker directory !!!
 
 ```bash
 docker buildx build \
   --platform linux/arm/v7,linux/arm64 \
   -f Dockerfile \
-  -t quillianne/ros2:armhf \
-  -t quillianne/ros2:arm64 \
+  -t yourusername/ros2:latest \
+  -t yourusername/ros2:armhf \
+  -t yourusername/ros2:arm64 \
   --push \
   .
 ```

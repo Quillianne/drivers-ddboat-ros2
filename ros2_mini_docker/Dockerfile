@@ -2,7 +2,7 @@
 # LAYER 0: Base image for ROS 2 Humble   #
 ##########################################
 
-FROM --platform=linux/arm/v7 ubuntu:22.04 AS layer0
+FROM ubuntu:22.04 AS layer0
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=en_US.UTF-8 \

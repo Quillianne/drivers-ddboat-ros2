@@ -79,16 +79,11 @@ you can then either build the DDBOAT Docker image or pull it.
 docker build -t ddboat_ros2 .
 ```
 
-For 32‑bit ARM boards build with the alternate file:
+For 64‑bit ARM boards build with the alternate file if you want a lighter image:
 
 ```bash
-docker build -t ddboat_ros2 -f Dockerfile.arm32 .
+docker build -t ddboat_ros2 -f old_Dockerfile .
 ```
-ROS 2 Humble does not ship prebuilt arm32 packages so this image is based on
-Ubuntu 22.04 and compiles ROS 2 from source. Building it may therefore take a
-long time. Some optional development dependencies such as `ros-humble-launch`
-and `ros-humble-ament-pycodestyle` are skipped during rosdep resolution since
-packages aren't available for arm32.
 
 The image vendors the `wjwwood/serial` library, so no extra host packages are
 needed.

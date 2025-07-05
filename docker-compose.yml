@@ -31,13 +31,9 @@
 # so the ROS 2 drivers remain unchanged.
 #############################
 
-# allow override via .env or shell exported ARCH
-x-defaults: &defaults
-  image_arch: "${ARCH:-armv7}"
-  platform: "linux/${ARCH:-armv7}"
 
 x-ddboat-base: &ddboat_base
-  image: "quillianne/ddboat:humble-${ARCH:-armv7}"
+  image: "quillianne/ddboat"
   privileged: true
   network_mode: host
   ipc: host
@@ -138,7 +134,7 @@ services:
     environment:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=0
-    image: "quillianne/ddboat:humble-${ARCH:-armv7}"
+    image: "quillianne/ddboat"
     network_mode: host
     command: >
       bash -c "source /opt/ros/humble/setup.bash && \

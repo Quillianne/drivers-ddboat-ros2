@@ -1,15 +1,8 @@
-FROM ros:humble-ros-base
+FROM quillianne/ros2
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /opt/ws
 
-# --- new: install Cyclone DDS RMW (and rosbridge, optional) -------------
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ros-humble-rmw-cyclonedds-cpp \
-        ros-humble-rosbridge-suite && \
-    rm -rf /var/lib/apt/lists/*
-# ------------------------------------------------------------------------
 
 # Build tools for any native libs your packages need
 RUN apt-get update && \
