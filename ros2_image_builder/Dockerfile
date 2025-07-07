@@ -22,10 +22,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ── Base tools ─────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
       locales build-essential cmake git curl wget gnupg2 lsb-release \
-      python3 python3-pip python3-rosdep python3-vcstool python3-rosinstall-generator \
+      python3.10 python3-pip python3-rosdep python3-vcstool python3-rosinstall-generator \
       python3-colcon-common-extensions \
+      python3.10-distutils python3.10-venv unzip\
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
+
+# la ligne python3.10-distutils python3.10-venv unzip est pour tenter de debuguer un problème de build
 
 # ── Initialise rosdep (Tier-3 armhf needs source builds) ──
 RUN rosdep init && rosdep update

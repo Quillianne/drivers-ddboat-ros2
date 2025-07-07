@@ -4,8 +4,14 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/.env"
 
+
 IMAGE_NAME="${IMAGE}"
+ROS2_IMAGE="${ROS2_IMAGE}"
 TAG="latest"
+
+# pulling the latest ROS2 image
+echo "🔄 Pulling latest base ROS2 image: $ROS2_IMAGE:$TAG..."
+docker pull $ROS2_IMAGE:$TAG
 
 echo "🚧 Building multiarch image for $IMAGE_NAME:$TAG..."
 
