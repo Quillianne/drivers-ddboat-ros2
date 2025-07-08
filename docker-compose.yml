@@ -137,7 +137,7 @@ services:
     image: "${IMAGE:-quillianne/ddboat}"
     network_mode: host
     command: >
-      "bash -c "source /opt/ros/humble/setup.bash && \
+      bash -c "source /opt/ros/humble/setup.bash && \
                ros2 launch rosbridge_server rosbridge_websocket_launch.xml \
                default_call_service_timeout:=5.0 \
                call_services_in_new_thread:=true \
