@@ -171,7 +171,8 @@ simply run `docker compose` using the provided file. Image pulling will happen a
 
 ## Build the Images on the Raspberry Pi
 
-If you prefer to build the image directly on the Raspberry Pi, follow the steps below.  
+If you prefer to build the image directly on the Raspberry Pi, follow the steps below.
+Maybe you'll have to add colcon flags for single threaded compilation (available in [`old_Dockerfile`](old_Dockerfile))
 Make sure to update the `.env` file with the appropriate image name to match your local build.
 
 ### Building the `ddboat` Image (after driver changes)
