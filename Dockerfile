@@ -24,10 +24,8 @@ COPY . /opt/ws/src/drivers-ddboat-ros2
 
 # Build only your package
 RUN . /opt/ros/humble/setup.sh && \
-    export CMAKE_BUILD_PARALLEL_LEVEL=1 && \
     colcon build \
       --packages-select ros2_ddboat \
-      --executor sequential \
       --event-handlers console_direct+ \
       --cmake-args \
           -DCMAKE_BUILD_TYPE=MinSizeRel \

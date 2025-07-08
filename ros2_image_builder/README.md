@@ -52,8 +52,14 @@ docker buildx inspect --bootstrap | grep Platforms
 
 ## 2. Build multi-arch images
 
+
+You can use script as explained in the main README or build manually.
+
 You have to create a ros2 repo in DockerHub repo or any other name but you have to modify following commands.
 Build both armhf (arm/v7) and arm64 variants and push to a registry:
+
+
+### Building manually
 
 !!! Be aware to be in your ros2_mini_docker directory !!!
 
@@ -90,13 +96,13 @@ docker buildx build \
 
 ### Pulling
 
-On an ARMv7 host (e.g., Raspberry Pi):
+On an ARMv7 host (e.g., Raspberry Pi 32 bit OS):
 
 ```bash
 docker pull quillianne/ros2:armhf
 ```
 
-On an ARM64 host:
+On an ARM64 host (e.g., Raspberry Pi 64 bit OS):
 
 ```bash
 docker pull quillianne/ros2:arm64

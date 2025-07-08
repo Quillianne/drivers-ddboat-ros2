@@ -83,27 +83,10 @@ ROS2_IMAGE=quillianne/ros2
 
 ---
 
-## Build the Docker image
 
-```bash
-# from the repository root
-docker build -t ddboat_ros2 .
-```
+# Running on a Raspberry Pi
 
-For 64‑bit ARM boards build with the alternate file if you want a lighter image:
-
-```bash
-docker build -t ddboat_ros2 -f old_Dockerfile .
-```
-
-The image vendors the `wjwwood/serial` library, so no extra host packages are
-needed.
-
----
-
-## Running on a Raspberry Pi
-
-# Using docker-compose
+## Using docker-compose
 
 The repository ships with a `docker-compose.yml` that orchestrates the driver
 containers and the optional WebSocket bridge.  Two profiles are provided:
@@ -126,6 +109,14 @@ into the containers by exporting environment variables before starting compose
 The `rosbridge` service (enabled in both profiles) exposes the ROS 2 graph on a
 WebSocket port so that external applications can interact with the boat without
 running ROS 2 natively.
+
+You may need to pull new changes if not done automatically by doing:
+
+```bash
+IMAGE=$(grep ^IMAGE= .env | cut -d= -f2) && docker pull "$IMAGE"
+```
+
+It is using the image name in .env (quillianne/ddboat) as long as I am the developer.
 
 ---
 
@@ -152,7 +143,67 @@ client.terminate()
 The scripts under `tests/` provide more complete examples that exercise all
 drivers via rosbridge.
 
-## Development tips
+# Building Docker Images for DDBoat
 
-* Use `docker exec -it <container> bash` to enter a running boat and introspect
-  topics with `ros2 topic echo …`.
+## Build the Images on a PC
+
+We recommend building the Docker images on a PC to significantly reduce compilation time.  
+Instructions on how it works are available in [`ros2_image_builder/README.md`](ros2_image_builder/README.md).
+
+This guide explains how to easily build and manually push the Docker images for the `ros2` image (and similarly for `ddboat`), as well as how to set up `buildx` for multi-architecture support.
+
+Scripts to automate the build and push process are available once your multi-architecture Docker environment is configured.
+
+```bash
+# For building the ros2 image
+cd ros2_image_builder && sh build_and_push.sh
+```
+
+```bash
+# For building the ddboat image (make sure you are in the root directory)
+sh build_and_push.sh
+```
+
+Once the images are pushed, deploying to a Raspberry Pi is straightforward:  
+simply run `docker compose` using the provided file. Image pulling will happen automatically.
+
+---
+
+## Build the Images on the Raspberry Pi
+
+If you prefer to build the image directly on the Raspberry Pi, follow the steps below.  
+Make sure to update the `.env` file with the appropriate image name to match your local build.
+
+### Building the `ddboat` Image (after driver changes)
+
+If you have modified the driver code, rebuild the image with:
+
+```bash
+# From the root of the repository
+docker build -t ddboat_ros2 .
+```
+
+For 64-bit ARM boards, you can use the alternate Dockerfile to build a smaller image:
+
+```bash
+docker build -t ddboat_ros2 -f old_Dockerfile .
+```
+
+The image includes the `wjwwood/serial` library directly,  
+so no additional packages are required on the host system.
+
+---
+
+### Building the `ros2` Base Image (after dependency changes)
+
+The base ROS 2 image includes only minimal dependencies and essential ROS 2 packages.
+
+If you have added new dependencies in the driver code or elsewhere,  
+you will need to rebuild the ROS 2 image directly on the Raspberry Pi:
+
+```bash
+# Inside the ros2_image_builder directory
+./build_ros2.sh
+```
+
+Make sure to test the image and push it if you plan to use it across multiple devices.
