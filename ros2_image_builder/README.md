@@ -1,12 +1,13 @@
 # DDBoat ROS 2 base image Build Guide
 
-This guide walks you through building a Docker image for ROS 2 Humble on 32-bit ARM (armhf) and multi-architecture variants using Docker Buildx, then running it on a host or pushing it to a registry.
+ros:humble-ros-base docker image doesn't exist in armhf so we have to build it ourself.
+This guide walks you through building a Docker image for ROS 2 Humble on multi-architecture (armhf and arm64) using Docker Buildx, then running it on a host or pushing it to a registry.
 On my M4 PRO, building took approximatively 40 minutes for armhf (and 4min for arm64)
 
 It is better to build them on a PC and not on the raspberry pi
 
 The `build_and_push.sh` script reads the target repository from `../.env`.
-Edit `ROS2_IMAGE` in that file if you plan to push to your own registry.
+Edit `ROS2_IMAGE` in that file if you plan to push to your own registry using this script.
 
 ---
 

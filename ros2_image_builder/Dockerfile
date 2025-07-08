@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ── Base tools ─────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
       locales build-essential cmake git curl wget gnupg2 lsb-release \
-      python3.10 python3-pip python3-rosdep python3-vcstool python3-ros2interface python3-rosinstall-generator \
+      python3.10 python3-pip python3-rosdep python3-vcstool python3-rosinstall-generator \
       python3-colcon-common-extensions \
       python3.10-distutils python3.10-venv unzip\
     && locale-gen en_US.UTF-8 \
@@ -46,7 +46,7 @@ RUN mkdir src
 
 RUN rosinstall_generator \
     rclcpp sensor_msgs geometry_msgs std_msgs diagnostic_msgs std_srvs \
-    rosbridge_suite ament_cmake \
+    rosbridge_suite ros2interface ament_cmake \
     ros2cli ros2run ros2launch ros2pkg ros2node ros2param \
     ros2service ros2topic ros2component ros2action \
     launch launch_ros \

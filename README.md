@@ -3,7 +3,16 @@
 This repository packages all the low‑level drivers that let a DDBoat talk to its
 sensors and actuators through **ROS 2 Humble**.  
 Everything is intended to run inside a single Docker image on a Raspberry Pi
-(64‑bit OS recommended).
+(64‑bit OS recommended but a lot of work have been done for making it fully compatible with 32 bit OS).
+
+The **DDBoat** container is built from a lightweight, custom-made **ROS 2** base image,  
+compatible with both **64-bit** and **32-bit ARM** architectures.
+
+- The ROS 2 base image is defined in [`ros2_image_builder/Dockerfile`](ros2_image_builder/Dockerfile)
+- The DDBoat application image is defined in [`Dockerfile`](Dockerfile)
+
+This repository also provides a `docker-compose.yml` file that simplifies setup and orchestration  
+by linking all required containers and handling image pulls automatically.
 
 ---
 
@@ -23,7 +32,7 @@ The encoders node also provides two services:
 requests the previous reading using the `P` command. The polling delay can be
 adjusted via the `delay` parameter which is sent to the device as `Dn;`.
 
-A convenience launch file starts **all** of them at once:
+A convenience launch file starts **all** of them at once (if running outside a container):
 
 ```
 ros2 launch ros2_ddboat all_nodes.launch.py
@@ -31,7 +40,7 @@ ros2 launch ros2_ddboat all_nodes.launch.py
 
 ---
 
-## Onboarding on Raspberry Pi
+# Onboarding on Raspberry Pi
 
 To set up Docker and our project on a fresh Raspberry Pi OS installation, run:
 
@@ -70,7 +79,7 @@ newgrp docker  # apply group change without logout (optional)
 
 you can then either build the DDBOAT Docker image or pull it.
 
-### Configure image names
+## Configure image names
 
 The build scripts and `docker-compose.yml` read the Docker repository names
 from `.env` at the project root. Adjust these values if you push images to
@@ -82,7 +91,6 @@ ROS2_IMAGE=quillianne/ros2
 ```
 
 ---
-
 
 # Running on a Raspberry Pi
 
@@ -110,13 +118,14 @@ The `rosbridge` service (enabled in both profiles) exposes the ROS 2 graph on a
 WebSocket port so that external applications can interact with the boat without
 running ROS 2 natively.
 
-You may need to pull new changes if not done automatically by doing:
+You may need to pull new changes in the container image by doing:
 
 ```bash
-IMAGE=$(grep ^IMAGE= .env | cut -d= -f2) && docker pull "$IMAGE"
+docker compose --profile hw pull            # real hardware
+# or
+docker compose --profile sim pull           # simulated devices
 ```
 
-It is using the image name in .env (quillianne/ddboat) as long as I am the developer.
 
 ---
 
