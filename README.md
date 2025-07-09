@@ -146,6 +146,19 @@ docker compose --profile hw pull            # real hardware
 docker compose --profile sim pull           # simulated devices
 ```
 
+### Managing the compose stack
+
+Use the same `--profile` flag with all commands to target either the hardware
+or simulation services:
+
+```bash
+docker compose --profile hw stop         # pause running containers
+docker compose --profile hw start        # resume stopped containers
+docker compose --profile hw down         # remove containers
+docker compose --profile hw logs -f      # view aggregated logs
+```
+
+
 
 ---
 
