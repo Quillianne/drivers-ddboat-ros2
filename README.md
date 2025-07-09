@@ -156,6 +156,13 @@ client.terminate()
 The scripts under `tests/` provide more complete examples that exercise all
 drivers via rosbridge.
 
+for running them: 
+
+```bash
+pip install -r requirements.txt
+python3 tests/test_xxxx_xxxx.py
+```
+
 # Building Docker Images for DDBoat
 
 ## Build the Images on a PC
