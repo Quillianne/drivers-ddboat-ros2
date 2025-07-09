@@ -1,19 +1,20 @@
-FROM ros:humble-ros-base
+ARG ROS2_IMAGE=quillianne/ros2
+FROM ${ROS2_IMAGE}
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    PYTHONIOENCODING=UTF-8
+
 WORKDIR /opt/ws
 
-# --- new: install Cyclone DDS RMW (and rosbridge, optional) -------------
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ros-humble-rmw-cyclonedds-cpp \
-        ros-humble-rosbridge-suite && \
-    rm -rf /var/lib/apt/lists/*
-# ------------------------------------------------------------------------
 
 # Build tools for any native libs your packages need
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        locales && \
+    locale-gen en_US.UTF-8 && \
     rm -rf /var/lib/apt/lists/*
 
 ENV MAKEFLAGS="-j1"
@@ -23,10 +24,8 @@ COPY . /opt/ws/src/drivers-ddboat-ros2
 
 # Build only your package
 RUN . /opt/ros/humble/setup.sh && \
-    export CMAKE_BUILD_PARALLEL_LEVEL=1 && \
     colcon build \
       --packages-select ros2_ddboat \
-      --executor sequential \
       --event-handlers console_direct+ \
       --cmake-args \
           -DCMAKE_BUILD_TYPE=MinSizeRel \
