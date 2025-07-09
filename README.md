@@ -118,7 +118,9 @@ into the containers by exporting environment variables before starting compose
 
 The `rosbridge` service (enabled in both profiles) exposes the ROS 2 graph on a
 WebSocket port so that external applications can interact with the boat without
-running ROS 2 natively.
+running ROS 2 natively.  It is configured to use a 5 s default timeout for
+service calls and to handle service and action requests in background threads so
+that the WebSocket loop never blocks.
 
 You may need to pull new changes in the container image by doing:
 
