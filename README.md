@@ -75,6 +75,9 @@ git clone https://github.com/Quillianne/drivers-ddboat-ros2
 cd drivers-ddboat-ros2
 sudo usermod -aG docker $USER
 newgrp docker  # apply group change without logout (optional)
+
+# Enable the I2C interface so the IMU and temperature sensors work:
+sudo raspi-config  # Interface Options -> I2C -> Enable and reboot
 ```
 
 you can then either build the DDBOAT Docker image or pull it.
@@ -89,6 +92,19 @@ your own registry:
 IMAGE=quillianne/ddboat
 ROS2_IMAGE=quillianne/ros2
 ```
+
+## Configure device ports
+
+Edit `.env` if the serial device numbers on your Raspberry Pi differ from the defaults:
+
+```bash
+GPS_DEV=/dev/ttyGPS0
+ARDUINO_DEV=/dev/ttyV0
+ENC_DEV=/dev/ttyENC0
+LORA_DEV=/dev/ttyLORA1
+```
+
+These variables are used by `docker-compose.yml` to bind the correct host devices.
 
 ---
 
@@ -112,9 +128,9 @@ docker compose --profile sim up -d          # simulated devices
 
 -d option is falcultative but useful for running in detached mode and allowing auto restart of docker containers on start up
 
-When using the *hardware* profile you can override which host devices are bound
-into the containers by exporting environment variables before starting compose
-(e.g. `GPS_DEV`, `ARDUINO_DEV`, … as documented in the compose file).
+When using the *hardware* profile you can change which host devices are bound
+into the containers by editing `.env` before starting compose
+(see the `GPS_DEV`, `ARDUINO_DEV`, … variables documented in the compose file).
 
 The `rosbridge` service (enabled in both profiles) exposes the ROS 2 graph on a
 WebSocket port so that external applications can interact with the boat without
