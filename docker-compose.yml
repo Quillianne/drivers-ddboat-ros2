@@ -2,11 +2,14 @@
 # DDBoat ROS 2 – docker‑compose
 # ---------------------------
 # PROFILES
-#   • hw  – run against the real Raspberry Pi hardware
-#   • sim – full software emulation for laptops/CI
+#   • hw       – run against the real Raspberry Pi hardware
+#   • sim      – full software emulation for laptops/CI
+#   • hw_extra – run individual drivers one per container
 #
 # HARDWARE MODE SERVICES (profile: hw)
 #   ddboat_all      – start **all** drivers in one container (default workflow)
+#
+# INDIVIDUAL DRIVER CONTAINERS (profile: hw_extra)
 #   gps_node        – GNSS only
 #   arduino_node    – motor controller only
 #   encoders_node   – propeller encoders only
@@ -67,7 +70,7 @@ services:
     devices:
       - ${GPS_DEV:-/dev/ttyGPS0}:/dev/ttyGPS0
     command: ros2 run ros2_ddboat gps_node
-    profiles: ["hw"]
+    profiles: ["hw_extra"]
 
   arduino_node:
     <<: *ddboat_base
@@ -75,7 +78,7 @@ services:
     devices:
       - ${ARDUINO_DEV:-/dev/ttyV0}:/dev/ttyV0
     command: ros2 run ros2_ddboat arduino_node
-    profiles: ["hw"]
+    profiles: ["hw_extra"]
 
   encoders_node:
     <<: *ddboat_base
@@ -83,7 +86,7 @@ services:
     devices:
       - ${ENC_DEV:-/dev/ttyENC0}:/dev/ttyENC0
     command: ros2 run ros2_ddboat encoders_node
-    profiles: ["hw"]
+    profiles: ["hw_extra"]
 
   imu_node:
     <<: *ddboat_base
@@ -91,7 +94,7 @@ services:
     devices:
       - /dev/i2c-1:/dev/i2c-1
     command: ros2 run ros2_ddboat imu_node
-    profiles: ["hw"]
+    profiles: ["hw_extra"]
 
   temperature_node:
     <<: *ddboat_base
@@ -99,7 +102,7 @@ services:
     devices:
       - /dev/i2c-1:/dev/i2c-1
     command: ros2 run ros2_ddboat temperature_node
-    profiles: ["hw"]
+    profiles: ["hw_extra"]
 
   radio_node:
     <<: *ddboat_base
@@ -107,7 +110,7 @@ services:
     devices:
       - ${LORA_DEV:-/dev/ttyLORA1}:/dev/ttyLORA1
     command: ros2 run ros2_ddboat radio_node
-    profiles: ["hw"]
+    profiles: ["hw_extra"]
 
   # --------------------------------------------------
   # FULL STACK – SOFTWARE‑ONLY EMULATION
@@ -151,4 +154,4 @@ services:
                  -p default_call_service_timeout:=5.0 \
                  -p call_services_in_new_thread:=true \
                  -p send_action_goals_in_new_thread:=true'
-    depends_on: [ddboat_sim]
+    profiles: ["hw", "sim"]
