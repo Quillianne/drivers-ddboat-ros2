@@ -105,10 +105,12 @@ containers and the optional WebSocket bridge.  Two profiles are provided:
 Run all drivers together with:
 
 ```bash
-docker compose --profile hw up            # real hardware
+docker compose --profile hw up -d           # real hardware
 # or
-docker compose --profile sim up           # simulated devices
+docker compose --profile sim up -d          # simulated devices
 ```
+
+-d option is falcultative but useful for running in detached mode and allowing auto restart of docker containers on start up
 
 When using the *hardware* profile you can override which host devices are bound
 into the containers by exporting environment variables before starting compose

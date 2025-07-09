@@ -49,6 +49,7 @@ services:
   ddboat_all:
     <<: *ddboat_base
     container_name: ddboat_all
+    restart: unless-stopped
     devices:
       - ${GPS_DEV:-/dev/ttyGPS0}:/dev/ttyGPS0
       - ${ARDUINO_DEV:-/dev/ttyV0}:/dev/ttyV0
@@ -63,6 +64,7 @@ services:
   # --------------------------------------------------
   gps_node:
     <<: *ddboat_base
+    restart: unless-stopped
     devices:
       - ${GPS_DEV:-/dev/ttyGPS0}:/dev/ttyGPS0
     command: ros2 run ros2_ddboat gps_node
@@ -70,6 +72,7 @@ services:
 
   arduino_node:
     <<: *ddboat_base
+    restart: unless-stopped
     devices:
       - ${ARDUINO_DEV:-/dev/ttyV0}:/dev/ttyV0
     command: ros2 run ros2_ddboat arduino_node
@@ -77,6 +80,7 @@ services:
 
   encoders_node:
     <<: *ddboat_base
+    restart: unless-stopped
     devices:
       - ${ENC_DEV:-/dev/ttyENC0}:/dev/ttyENC0
     command: ros2 run ros2_ddboat encoders_node
@@ -84,6 +88,7 @@ services:
 
   imu_node:
     <<: *ddboat_base
+    restart: unless-stopped
     devices:
       - /dev/i2c-1:/dev/i2c-1
     command: ros2 run ros2_ddboat imu_node
@@ -91,6 +96,7 @@ services:
 
   temperature_node:
     <<: *ddboat_base
+    restart: unless-stopped
     devices:
       - /dev/i2c-1:/dev/i2c-1
     command: ros2 run ros2_ddboat temperature_node
@@ -98,6 +104,7 @@ services:
 
   radio_node:
     <<: *ddboat_base
+    restart: unless-stopped
     devices:
       - ${LORA_DEV:-/dev/ttyLORA1}:/dev/ttyLORA1
     command: ros2 run ros2_ddboat radio_node
@@ -113,6 +120,7 @@ services:
       - ROS_DOMAIN_ID=0
     <<: *ddboat_base
     container_name: ddboat_sim
+    restart: unless-stopped
     volumes:
       - ./tests:/tests:ro
     command: >
@@ -135,6 +143,7 @@ services:
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=0
     image: "${IMAGE:-quillianne/ddboat}"
+    restart: unless-stopped
     network_mode: host
     command: >
       bash -c "source /opt/ros/humble/setup.bash && \
