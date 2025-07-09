@@ -143,5 +143,4 @@ services:
                  -p default_call_service_timeout:=5.0 \
                  -p call_services_in_new_thread:=true \
                  -p send_action_goals_in_new_thread:=true'
-    depends_on:
-      - ddboat_sim    profiles: ["sim", "hw"]
+    depends_on: [ddboat_sim]
