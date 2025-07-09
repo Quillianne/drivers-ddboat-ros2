@@ -113,17 +113,18 @@ These variables are used by `docker-compose.yml` to bind the correct host device
 ## Using docker-compose
 
 The repository ships with a `docker-compose.yml` that orchestrates the driver
-containers and the optional WebSocket bridge.  Two profiles are provided:
+containers and the optional WebSocket bridge.  Three profiles are provided:
 
-* **`hw`** – run against the real Raspberry Pi hardware.
+* **`hw`** – run all drivers in a single container on real hardware.
 * **`sim`** – full software emulation for development on a laptop.
+* **`hw_extra`** – launch individual driver containers for debugging.
 
 Run all drivers together with:
 
 ```bash
-docker compose --profile hw up -d           # real hardware
+docker compose --profile hw up -d           # ddboat_all + rosbridge
 # or
-docker compose --profile sim up -d          # simulated devices
+docker compose --profile sim up -d          # ddboat_sim + rosbridge
 ```
 
 -d option is falcultative but useful for running in detached mode and allowing auto restart of docker containers on start up
@@ -132,7 +133,7 @@ When using the *hardware* profile you can change which host devices are bound
 into the containers by editing `.env` before starting compose
 (see the `GPS_DEV`, `ARDUINO_DEV`, … variables documented in the compose file).
 
-The `rosbridge` service (enabled in both profiles) exposes the ROS 2 graph on a
+The `rosbridge` service (enabled in the hardware and simulation profiles) exposes the ROS 2 graph on a
 WebSocket port so that external applications can interact with the boat without
 running ROS 2 natively.  It is configured to use a 5 s default timeout for
 service calls and to handle service and action requests in background threads so
