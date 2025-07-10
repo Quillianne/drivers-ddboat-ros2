@@ -24,6 +24,7 @@ class Device:
     def __init__(self, path: str):
         master, slave = pty.openpty()
         self.master = master
+        os.set_blocking(self.master, False)
         self.slave_name = os.ttyname(slave)
         self.path = path
         if os.geteuid() == 0:
@@ -40,7 +41,10 @@ class Device:
     def write(self, data: bytes | str) -> None:
         if isinstance(data, str):
             data = data.encode()
-        os.write(self.master, data)
+        try:
+            os.write(self.master, data)
+        except OSError:
+            pass
 
 
 def gps_line() -> str:
