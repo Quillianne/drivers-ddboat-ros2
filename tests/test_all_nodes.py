@@ -14,7 +14,6 @@ import sys
 import time
 import threading
 from textwrap import shorten
-from typing import Dict
 
 import roslibpy
 
@@ -25,7 +24,7 @@ HOST = sys.argv[1] if len(sys.argv) > 1 else "localhost"
 PORT = 9090
 TIMEOUT_S = 5.0                      # per-topic timeout
 
-SENSOR_TOPICS: Dict[str, str] = {
+SENSOR_TOPICS = {
     "/fix": "sensor_msgs/NavSatFix",
     "/encoders": "std_msgs/Int32MultiArray",
     "/imu/data_raw": "sensor_msgs/Imu",
@@ -47,14 +46,14 @@ def pretty(msg) -> str:
 # ---------------------------------------------------------------------------
 # Test logic
 # ---------------------------------------------------------------------------
-results: Dict[str, bool] = {t: False for t in SENSOR_TOPICS}
-counts: Dict[str, int] = {t: 0 for t in SENSOR_TOPICS}
+results = {t: False for t in SENSOR_TOPICS}
+counts = {t: 0 for t in SENSOR_TOPICS}
 
 
 def main() -> None:
     client = roslibpy.Ros(host=HOST, port=PORT)
     client.run()
-    print(f"Connected to rosbridge at ws://{HOST}:{PORT}\n")
+    print("Connected to rosbridge at ws://{}:{}\n".format(HOST, PORT))
 
     # ----------------------------------------------------------------------
     # Subscriptions
@@ -65,7 +64,7 @@ def main() -> None:
         def _cb(msg):
             counts[topic] += 1
             results[topic] = True
-            print(f"[{topic}] {pretty(msg)}")
+            print("[{}] {}".format(topic, pretty(msg)))
         return _cb
 
     for t, typ in SENSOR_TOPICS.items():
@@ -105,9 +104,9 @@ def main() -> None:
         try:
             srv = roslibpy.Service(client, name, srv_type)
             res = srv.call(roslibpy.ServiceRequest(payload), timeout=5)
-            print(f"{name}: {res}")
+            print("{}: {}".format(name, res))
         except Exception as e:
-            print(f"{name} failed: {e}")
+            print("{} failed: {}".format(name, e))
 
     # ----------------------------------------------------------------------
     # Wait
@@ -131,12 +130,12 @@ def main() -> None:
     print("\n===== TEST SUMMARY =====")
     for topic in SENSOR_TOPICS:
         status = "PASS" if results[topic] else "FAIL"
-        print(f"{topic:<20} {status}  ({counts[topic]} msg)")
+    print("{:<20} {}  ({} msg)".format(topic, status, counts[topic]))
     print("========================")
 
     if not all(results.values()):
         missing = [t for t, ok in results.items() if not ok]
-        sys.exit(f"No data received on: {missing}")
+    sys.exit("No data received on: {}".format(missing))
 
 
 if __name__ == "__main__":
