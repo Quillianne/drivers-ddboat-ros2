@@ -22,17 +22,17 @@ def main() -> None:
                                  '/motors_cmd',
                                  'geometry_msgs/Twist')
 
-    # Message payload expressed as plain Python dict matching the ROS fields
-    twist_msg = {
-        'linear':  {'x': 50.0, 'y': 50.0, 'z': 0.0},
-        'angular': {'x': 0.0,  'y': 0.0,  'z': 0.0}
-    }
-
-    # Publish five times with a short pause
-    for i in range(5):
-        print(f'Publishing twist #{i+1}: {twist_msg}')
-        twist_topic.publish(roslibpy.Message(twist_msg))
-        time.sleep(0.1)
+    # Test chaque moteur à différentes valeurs
+    motor_values = [0, 25, 50, 75, 100]
+    for left in motor_values:
+        for right in motor_values:
+            twist_msg = {
+                'linear':  {'x': float(left), 'y': float(right), 'z': 0.0},
+                'angular': {'x': 0.0,  'y': 0.0,  'z': 0.0}
+            }
+            print('Test moteurs - gauche: {}, droite: {}'.format(left, right))
+            twist_topic.publish(roslibpy.Message(twist_msg))
+            time.sleep(0.2)
 
 
     # Exercise all available services

@@ -21,18 +21,11 @@ def main() -> None:
     client.run()
 
     def on_imu(msg):
-        print("IMU msg received: {}".format(msg))
-        calib_srv = roslibpy.Service(client, '/fast_heading_calibration', 'std_srvs/srv/Trigger')
-        try:
-            res = calib_srv.call(roslibpy.ServiceRequest(), timeout=5)
-            print('fast_heading_calibration: {}'.format(res))
-        except Exception as e:
-            print('fast_heading_calibration failed: {}'.format(e))
-        # Clean up in a background thread
-        def _shutdown():
-            imu_topic.unsubscribe()
-            client.terminate()
-        threading.Thread(target=_shutdown, daemon=True).start()
+        print("IMU data_raw: {}".format(msg))
+
+    def on_mag(msg):
+        print("IMU mag: {}".format(msg))
+
 
     imu_topic = roslibpy.Topic(
         client,
@@ -40,6 +33,13 @@ def main() -> None:
         'sensor_msgs/Imu'
     )
     imu_topic.subscribe(on_imu)
+
+    mag_topic = roslibpy.Topic(
+        client,
+        '/imu/mag',
+        'geometry_msgs/Vector3Stamped'
+    )
+    mag_topic.subscribe(on_mag)
 
     # Keep the script alive until `client.terminate()` is called
     try:
