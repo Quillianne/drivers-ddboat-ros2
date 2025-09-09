@@ -82,17 +82,21 @@ private:
   {
     sensor_msgs::msg::Temperature tleft;
     sensor_msgs::msg::Temperature tright;
-    uint8_t val;
-    if (read_reg(0x4d, 0x00, val)) {
-      tleft.temperature = static_cast<int8_t>(val);
+    uint8_t val_left = 0, val_right = 0;
+    bool ok_left = read_reg(0x4d, 0x00, val_left);
+    bool ok_right = read_reg(0x48, 0x00, val_right);
+    if (ok_left) {
+      tleft.temperature = static_cast<int8_t>(val_left);
     } else {
       err_left_++;
     }
-    if (read_reg(0x48, 0x00, val)) {
-      tright.temperature = static_cast<int8_t>(val);
+    if (ok_right) {
+      tright.temperature = static_cast<int8_t>(val_right);
     } else {
       err_right_++;
     }
+    // Log les valeurs brutes à chaque itération
+    RCLCPP_INFO(this->get_logger(), "TEMP_LEFT: %d\tTEMP_RIGHT: %d", (int)tleft.temperature, (int)tright.temperature);
     pub_left_->publish(tleft);
     pub_right_->publish(tright);
 

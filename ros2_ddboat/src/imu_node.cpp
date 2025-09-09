@@ -100,30 +100,42 @@ private:
     uint8_t buf[6];
     sensor_msgs::msg::Imu imu;
     sensor_msgs::msg::MagneticField mag;
+    int16_t ax=0, ay=0, az=0, gx=0, gy=0, gz=0, mx=0, my=0, mz=0;
     if (fd_ag_ >= 0) {
       if (read_block(fd_ag_, 0x6b, 0x22, buf, 6)) {
-        imu.angular_velocity.x = (int16_t)(buf[0] | (buf[1] << 8));
-        imu.angular_velocity.y = (int16_t)(buf[2] | (buf[3] << 8));
-        imu.angular_velocity.z = (int16_t)(buf[4] | (buf[5] << 8));
+        gx = (int16_t)(buf[0] | (buf[1] << 8));
+        gy = (int16_t)(buf[2] | (buf[3] << 8));
+        gz = (int16_t)(buf[4] | (buf[5] << 8));
+        imu.angular_velocity.x = gx;
+        imu.angular_velocity.y = gy;
+        imu.angular_velocity.z = gz;
       }
       if (read_block(fd_ag_, 0x6b, 0x28, buf, 6)) {
-        imu.linear_acceleration.x = (int16_t)(buf[0] | (buf[1] << 8));
-        imu.linear_acceleration.y = (int16_t)(buf[2] | (buf[3] << 8));
-        imu.linear_acceleration.z = (int16_t)(buf[4] | (buf[5] << 8));
+        ax = (int16_t)(buf[0] | (buf[1] << 8));
+        ay = (int16_t)(buf[2] | (buf[3] << 8));
+        az = (int16_t)(buf[4] | (buf[5] << 8));
+        imu.linear_acceleration.x = ax;
+        imu.linear_acceleration.y = ay;
+        imu.linear_acceleration.z = az;
       }
     }
     if (fd_mg_ >= 0) {
       if (read_block(fd_mg_, 0x1e, 0x28, buf, 6)) {
-        mag.magnetic_field.x = (int16_t)(buf[0] | (buf[1] << 8));
-        mag.magnetic_field.y = (int16_t)(buf[2] | (buf[3] << 8));
-        mag.magnetic_field.z = (int16_t)(buf[4] | (buf[5] << 8));
-        last_mag_x_ = mag.magnetic_field.x;
-        last_mag_y_ = mag.magnetic_field.y;
-        last_mag_z_ = mag.magnetic_field.z;
+        mx = (int16_t)(buf[0] | (buf[1] << 8));
+        my = (int16_t)(buf[2] | (buf[3] << 8));
+        mz = (int16_t)(buf[4] | (buf[5] << 8));
+        mag.magnetic_field.x = mx;
+        mag.magnetic_field.y = my;
+        mag.magnetic_field.z = mz;
+        last_mag_x_ = mx;
+        last_mag_y_ = my;
+        last_mag_z_ = mz;
       }
     }
-    pub_imu_->publish(imu);
-    pub_mag_->publish(mag);
+    // Log les valeurs brutes à chaque itération
+    RCLCPP_INFO(this->get_logger(), "MAG: %d %d %d\tACC: %d %d %d\tGYR: %d %d %d", mx, my, mz, ax, ay, az, gx, gy, gz);
+  pub_imu_->publish(imu);
+  pub_mag_->publish(mag);
 
     if (has_heading_offset_) {
       double heading = std::atan2(mag.magnetic_field.y, mag.magnetic_field.x) - heading_offset_;
