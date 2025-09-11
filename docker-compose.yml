@@ -54,11 +54,11 @@ services:
     restart: unless-stopped
     devices:
       - ${GPS_DEV:-/dev/ttyGPS0}:${GPS_DEV:-/dev/ttyGPS0}
-      - ${ARDUINO_DEV:-/dev/ttyV0}:${ARDUINO_DEV:-/dev/ttyV0}
+      - ${ARDUINO_DEV:-/dev/ttyV0}:/dev/ttyV0
       - ${LORA_DEV:-/dev/ttyLORA1}:${LORA_DEV:-/dev/ttyLORA1}
       - /dev/i2c-1:/dev/i2c-1
     command: >
-      bash -c "ln -sf ${GPS_DEV} /dev/ttyGPS0 && ln -sf ${LORA_DEV} /dev/ttyLORA1 && ln -sf ${ARDUINO_DEV} /dev/ttyV0 && ros2 launch ros2_ddboat all_nodes.launch.py"
+      bash -c "ln -sf ${GPS_DEV} /dev/ttyGPS0 && ln -sf ${LORA_DEV} /dev/ttyLORA1 && ros2 launch ros2_ddboat all_nodes.launch.py"
     profiles: ["hw"]
 
   # --------------------------------------------------
@@ -77,9 +77,9 @@ services:
     <<: *ddboat_base
     restart: unless-stopped
     devices:
-      - ${ARDUINO_DEV:-/dev/ttyV0}:${ARDUINO_DEV:-/dev/ttyV0}
+      - ${ARDUINO_DEV:-/dev/ttyV0}:/dev/ttyV0
     command: >
-      bash -c "ln -sf ${ARDUINO_DEV} /dev/ttyV0 && ros2 run ros2_ddboat arduino_node"
+      bash -c "ros2 run ros2_ddboat arduino_node"
     profiles: ["hw_extra"]
 
   encoders_node:
