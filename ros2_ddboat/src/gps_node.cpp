@@ -1,6 +1,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <serial/serial.h>
+#include <std_srvs/srv/set_bool.hpp>
+#include <std_srvs/srv/trigger.hpp>
 #include <string>
 #include <vector>
 #include <chrono>
@@ -8,12 +10,6 @@
 using namespace std::chrono_literals;
 
 class GPSNode : public rclcpp::Node
-    srv_set_filter_ = this->create_service<std_srvs::srv::SetBool>(
-      "set_filter_speed",
-      std::bind(&GPSNode::handle_set_filter, this, std::placeholders::_1, std::placeholders::_2));
-    srv_get_filter_ = this->create_service<std_srvs::srv::Trigger>(
-      "get_filter_speed",
-      std::bind(&GPSNode::handle_get_filter, this, std::placeholders::_1, std::placeholders::_2));
 {
 public:
   GPSNode() : Node("gps_node"), serial_()
@@ -32,6 +28,12 @@ public:
 
     publisher_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("fix", 10);
     timer_ = this->create_wall_timer(200ms, std::bind(&GPSNode::timer_callback, this));
+    srv_set_filter_ = this->create_service<std_srvs::srv::SetBool>(
+      "set_filter_speed",
+      std::bind(&GPSNode::handle_set_filter, this, std::placeholders::_1, std::placeholders::_2));
+    srv_get_filter_ = this->create_service<std_srvs::srv::Trigger>(
+      "get_filter_speed",
+      std::bind(&GPSNode::handle_get_filter, this, std::placeholders::_1, std::placeholders::_2));
   }
 
 private:

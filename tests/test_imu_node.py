@@ -21,7 +21,13 @@ def main() -> None:
     client.run()
 
     def on_imu(msg):
-        print("IMU data_raw: {}".format(msg))
+        ax = msg['linear_acceleration']['x']
+        ay = msg['linear_acceleration']['y']
+        az = msg['linear_acceleration']['z']
+        gx = msg['angular_velocity']['x']
+        gy = msg['angular_velocity']['y']
+        gz = msg['angular_velocity']['z']
+    print("ACC: %d %d %d\tGYR: %d %d %d\r" % (int(ax), int(ay), int(az), int(gx), int(gy), int(gz)))
 
     def on_mag(msg):
         print("IMU mag: {}".format(msg))
