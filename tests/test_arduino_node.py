@@ -50,7 +50,7 @@ def main() -> None:
         srv = roslibpy.Service(client, '/' + name, 'std_srvs/srv/Trigger')
         try:
             res = srv.call(roslibpy.ServiceRequest(), timeout=5)
-            print(f'{name}: success={res["success"]} msg={res.get("message", "")}')
+            print(name + ': success=' + str(res["success"]) + ' msg=' + res.get("message", ""))
         except Exception as e:
             print(f'{name} call failed: {e}')
 
