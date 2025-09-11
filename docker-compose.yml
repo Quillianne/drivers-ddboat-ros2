@@ -53,12 +53,12 @@ services:
     container_name: ddboat_all
     restart: unless-stopped
     devices:
-      - ${GPS_DEV:-/dev/ttyGPS0}:/dev/ttyGPS0
-      - ${ARDUINO_DEV:-/dev/ttyV0}:/dev/ttyV0
-      - ${LORA_DEV:-/dev/ttyLORA1}:/dev/ttyLORA1
+      - ${GPS_DEV:-/dev/ttyGPS0}:${GPS_DEV:-/dev/ttyGPS0}
+      - ${ARDUINO_DEV:-/dev/ttyV0}:${ARDUINO_DEV:-/dev/ttyV0}
+      - ${LORA_DEV:-/dev/ttyLORA1}:${LORA_DEV:-/dev/ttyLORA1}
       - /dev/i2c-1:/dev/i2c-1
     command: >
-      bash -c "ln -sf ${GPS_DEV} /dev/ttyGPS0 && ln -sf ${LORA_DEV} /dev/ttyLORA1 && ros2 launch ros2_ddboat all_nodes.launch.py"
+      bash -c "ln -sf ${GPS_DEV} /dev/ttyGPS0 && ln -sf ${LORA_DEV} /dev/ttyLORA1 && ln -sf ${ARDUINO_DEV} /dev/ttyV0 && ros2 launch ros2_ddboat all_nodes.launch.py"
     profiles: ["hw"]
 
   # --------------------------------------------------
@@ -68,24 +68,27 @@ services:
     <<: *ddboat_base
     restart: unless-stopped
     devices:
-      - ${GPS_DEV:-/dev/ttyGPS0}:/dev/ttyGPS0
-    command: ros2 run ros2_ddboat gps_node
+      - ${GPS_DEV:-/dev/ttyGPS0}:${GPS_DEV:-/dev/ttyGPS0}
+    command: >
+      bash -c "ln -sf ${GPS_DEV} /dev/ttyGPS0 && ros2 run ros2_ddboat gps_node"
     profiles: ["hw_extra"]
 
   arduino_node:
     <<: *ddboat_base
     restart: unless-stopped
     devices:
-      - ${ARDUINO_DEV:-/dev/ttyV0}:/dev/ttyV0
-    command: ros2 run ros2_ddboat arduino_node
+      - ${ARDUINO_DEV:-/dev/ttyV0}:${ARDUINO_DEV:-/dev/ttyV0}
+    command: >
+      bash -c "ln -sf ${ARDUINO_DEV} /dev/ttyV0 && ros2 run ros2_ddboat arduino_node"
     profiles: ["hw_extra"]
 
   encoders_node:
     <<: *ddboat_base
     restart: unless-stopped
     devices:
-      - ${ENC_DEV:-/dev/ttyENC0}:/dev/ttyENC0
-    command: ros2 run ros2_ddboat encoders_node
+      - ${ENC_DEV:-/dev/ttyENC0}:${ENC_DEV:-/dev/ttyENC0}
+    command: >
+      bash -c "ln -sf ${ENC_DEV} /dev/ttyENC0 && ros2 run ros2_ddboat encoders_node"
     profiles: ["hw_extra"]
 
   imu_node:
@@ -108,9 +111,9 @@ services:
     <<: *ddboat_base
     restart: unless-stopped
     devices:
-      - ${LORA_DEV:-/dev/ttyLORA1}:/dev/ttyLORA1
-    command: ros2 run ros2_ddboat radio_node
-    profiles: ["hw_extra"]
+      - ${LORA_DEV:-/dev/ttyLORA1}:${LORA_DEV:-/dev/ttyLORA1}
+    command: >
+      bash -c "ln -sf ${LORA_DEV} /dev/ttyLORA1 && ros2 run ros2_ddboat radio_node"
 
   # --------------------------------------------------
   # FULL STACK – SOFTWARE‑ONLY EMULATION
