@@ -27,10 +27,13 @@ def main() -> None:
         gx = msg['angular_velocity']['x']
         gy = msg['angular_velocity']['y']
         gz = msg['angular_velocity']['z']
-        print("ACC: %d %d %d\tGYR: %d %d %d\r" % (int(ax), int(ay), int(az), int(gx), int(gy), int(gz)))
+        print("ACC: %d %d %d\tGYR: %d %d %d" % (int(ax), int(ay), int(az), int(gx), int(gy), int(gz)), end='\r')
 
     def on_mag(msg):
-        print("IMU mag: {}".format(msg))
+        mx = msg['vector']['x']
+        my = msg['vector']['y']
+        mz = msg['vector']['z']
+        print("MAG: %d %d %d" % (int(mx), int(my), int(mz)), end='\r')
 
 
     imu_topic = roslibpy.Topic(

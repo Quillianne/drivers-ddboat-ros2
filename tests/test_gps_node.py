@@ -23,8 +23,8 @@ def main() -> None:
     def on_fix(msg):
         lat = msg['latitude']
         lon = msg['longitude']
-        print("Received fix: {:.6f}, {:.6f}".format(lat, lon))
-        print("Google Maps: https://maps.google.com/?q={:.6f},{:.6f}".format(lat, lon))
+        print("Received fix: {:.6f}, {:.6f}".format(lat, lon), end='\r')
+        print("Google Maps: https://maps.google.com/?q={:.6f},{:.6f}".format(lat, lon), end='\r')
 
     fix_topic = roslibpy.Topic(
         client,
