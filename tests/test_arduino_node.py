@@ -52,7 +52,7 @@ def main() -> None:
             res = srv.call(roslibpy.ServiceRequest(), timeout=5)
             print(name + ': success=' + str(res["success"]) + ' msg=' + res.get("message", ""))
         except Exception as e:
-            print(f'{name} call failed: {e}')
+            print(name + ' call failed: ' + str(e))
 
     # Clean up from a separate thread
     def _shutdown():
