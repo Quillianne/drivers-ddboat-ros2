@@ -20,7 +20,7 @@ def main() -> None:
     client = roslibpy.Ros(host='localhost', port=9090)
     client.run()
 
-    state = {'acc': None, 'gyro': None, 'mag': None}
+    state = {'acc': (0, 0, 0), 'gyro': (0, 0, 0), 'mag': (0, 0, 0)}
 
     def print_all():
         if state['acc'] and state['gyro'] and state['mag']:
