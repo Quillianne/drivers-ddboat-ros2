@@ -1,56 +1,53 @@
-# DDBoat ROS 2 Drivers
 
-This repository packages all the low‑level drivers that let a DDBoat talk to its
-sensors and actuators through **ROS 2 Humble**.  
-Everything is intended to run inside a single Docker image on a Raspberry Pi
-(64‑bit OS recommended but a lot of work have been done for making it fully compatible with 32 bit OS).
+# Installation sur matériel existant
 
-The **DDBoat** container is built from a lightweight, custom-made **ROS 2** base image,  
-compatible with both **64-bit** and **32-bit ARM** architectures.
 
-- The ROS 2 base image is defined in [`ros2_image_builder/Dockerfile`](ros2_image_builder/Dockerfile)
-- The DDBoat application image is defined in [`Dockerfile`](Dockerfile)
+Sur les DDBoat actuels, il peut être utile de lancer :
+```bash
+sudo raspi-config
+```
+et d'utiliser l'option "Expand Filesystem" pour que tout l'espace de la carte SD soit disponible. Redémarrez ensuite le Raspberry Pi.
 
-This repository also provides a `docker-compose.yml` file that simplifies setup and orchestration  
-by linking all required containers and handling image pulls automatically.
+2. **Installer les drivers et Docker**
+  - Placez-vous dans votre dossier personnel puis clonez le dépôt et lancez l'installation :
+    ```bash
+    cd $HOME
+    git clone https://github.com/Quillianne/drivers-ddboat-ros2
+    cd drivers-ddboat-ros2/install_ddboat
+    ./install.bash
+    ```
+   - Ce script installe Docker, Compose, git, wget et configure le système pour DDBoat.
+   - Il lance automatiquement `docker compose` en mode reboot : les services démarrent à chaque redémarrage du Raspberry Pi.
+   - Si vous souhaitez que les services ne démarrent pas automatiquement, il faut stopper le stack avec :
+     ```bash
+     docker compose --profile hw down
+     ```
+
+3. **Configurer le projet**
+  - Adaptez le fichier `.env` selon votre matériel (ports, noms d’images) mais il devrait être fonctionnel sur les ddboat
+
+
+Cette procédure est idéale pour installer rapidement sur un DDBoat tel qu'ils sont actuellement (septembre 2025)
+
+# DDBoat ROS 2 Drivers — Guide d'installation complet
+
+Ce dépôt regroupe tous les drivers bas niveau pour piloter un DDBoat via **ROS 2 Humble** sur Raspberry Pi (32 ou 64 bits). Tout est prévu pour tourner dans un conteneur Docker, avec orchestration via `docker-compose`.
 
 ---
 
-## Architecture
+## Installation rapide sur Raspberry Pi (debian bullseye ou bookworm)
 
-| Node (executable) | Purpose | Topic(s) |
-|-------------------|---------|----------|
-| `gps_node`        | Publishes GNSS position from the serial NMEA stream | `sensor_msgs/NavSatFix` |
-| `arduino_node`    | Sends motor commands to the Arduino motor‑controller | subscribes `geometry_msgs/Twist` |
-| `encoders_node`   | Publishes raw propeller‑encoder counts | `std_msgs/Int32MultiArray` |
-| `imu_node`        | Publishes 9‑axis IMU data and calibrated heading; service `fast_heading_calibration` | `sensor_msgs/Imu`, `sensor_msgs/MagneticField`, `std_msgs/Float64` |
-| `temperature_node`| Publishes motor temperatures from two TC74 sensors and exposes standby/config services | `sensor_msgs/Temperature`, diagnostics |
-| `radio_node`      | Sends/receives LoRa packets (`id_src:id_dst:length:msg` frames) | `std_msgs/String` (`radio_tx`, `radio_rx`) |
+### 1. Préparation et installation de Docker
 
-The encoders node also provides two services:
-`/clear_counts` resets the counters with the `C` command and `/request_last`
-requests the previous reading using the `P` command. The polling delay can be
-adjusted via the `delay` parameter which is sent to the device as `Dn;`.
-
-A convenience launch file starts **all** of them at once (if running outside a container):
-
-```
-ros2 launch ros2_ddboat all_nodes.launch.py
-```
-
----
-
-# Onboarding on Raspberry Pi
-
-To set up Docker and our project on a fresh Raspberry Pi OS installation, run:
+Ouvrez un terminal et lancez les commandes suivantes pour installer Docker et ses dépendances :
 
 ```bash
-# Remove any conflicting container packages
+# Supprimer les anciens paquets Docker
 for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do
   sudo apt-get remove -y $pkg
 done
 
-# Add Docker's official GPG key
+# Ajouter la clé GPG officielle de Docker
 sudo apt-get update
 sudo apt-get install -y ca-certificates curl
 sudo install -m 0755 -d /etc/apt/keyrings
@@ -58,7 +55,7 @@ sudo curl -fsSL https://download.docker.com/linux/raspbian/gpg \
   -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-# Add the Docker repository
+# Ajouter le dépôt Docker
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
   https://download.docker.com/linux/raspbian \
@@ -66,108 +63,163 @@ echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
 
-# Install Docker and related tools
+# Installer Docker et les outils associés
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io \
   docker-buildx-plugin docker-compose-plugin
 
-# Clone this repository and add your user to the docker group
+# Ajouter votre utilisateur au groupe docker
+sudo usermod -aG docker $USER
+newgrp docker  # (optionnel, pour appliquer le changement sans déconnexion)
+```
+
+### 2. Récupération du projet et installation
+
+Placez-vous dans votre dossier personnel, clonez le dépôt et lancez l'installation :
+
+```bash
+cd $HOME
+git clone https://github.com/Quillianne/drivers-ddboat-ros2
+cd drivers-ddboat-ros2/install_ddboat
+./install.bash
+```
+
+Ce script installe les dépendances supplémentaires et lance automatiquement `docker compose` en mode reboot (démarrage automatique à chaque redémarrage).
+Si vous souhaitez désactiver ce démarrage automatique, utilisez :
+```bash
+docker compose --profile hw down
+```
+
+### 3. Activation des interfaces matérielles
+
+Pour que les capteurs IMU et température fonctionnent, activez l'I2C :
+
+```bash
+sudo raspi-config
+# Interface Options > Serial > desactiver terminal série
+# Interface Options > SPI > Enable
+# Interface Options > I2C > Enable puis redémarrez
+
+```
+
+---
+
+## Récupération et configuration du projet
+
+Clonez le dépôt :
+
+```bash
 git clone https://github.com/Quillianne/drivers-ddboat-ros2
 cd drivers-ddboat-ros2
-sudo usermod -aG docker $USER
-newgrp docker  # apply group change without logout (optional)
-
-# Enable the I2C interface so the IMU and temperature sensors work:
-sudo raspi-config  # Interface Options -> I2C -> Enable and reboot
 ```
 
-you can then either build the DDBOAT Docker image or pull it.
+### Configuration des ports et images
 
-## Configure image names
-
-The build scripts and `docker-compose.yml` read the Docker repository names
-from `.env` at the project root. Adjust these values if you push images to
-your own registry:
+Adaptez le fichier `.env` à votre matériel :
 
 ```bash
+# Exemple de .env
 IMAGE=quillianne/ddboat
 ROS2_IMAGE=quillianne/ros2
-```
-
-## Configure device ports
-
-Edit `.env` if the serial device numbers on your Raspberry Pi differ from the defaults:
-
-```bash
 GPS_DEV=/dev/ttyGPS0
 ARDUINO_DEV=/dev/ttyV0
 ENC_DEV=/dev/ttyENC0
 LORA_DEV=/dev/ttyLORA1
 ```
 
-These variables are used by `docker-compose.yml` to bind the correct host devices.
+---
+
+## Lancement des drivers avec Docker Compose
+
+Trois profils sont disponibles :
+
+- `hw` : tous les drivers dans un seul conteneur (pour le vrai hardware)
+- `sim` : émulation logicielle pour développement
+- `hw_extra` : drivers séparés pour debug
+
+Lancez tous les drivers :
+
+```bash
+docker compose --profile hw up -d
+```
+
+Pour voir les logs :
+
+```bash
+docker compose --profile hw logs -f
+```
+
+Pour arrêter ou redémarrer :
+
+```bash
+docker compose --profile hw stop
+docker compose --profile hw start
+docker compose --profile hw down
+```
 
 ---
 
-# Running on a Raspberry Pi
+## Mise à jour ou recompilation des images Docker
 
-## Using docker-compose
-
-The repository ships with a `docker-compose.yml` that orchestrates the driver
-containers and the optional WebSocket bridge.  Three profiles are provided:
-
-* **`hw`** – run all drivers in a single container on real hardware.
-* **`sim`** – full software emulation for development on a laptop.
-* **`hw_extra`** – launch individual driver containers for debugging.
-
-Run all drivers together with:
+Pour mettre à jour les images :
 
 ```bash
-docker compose --profile hw up -d           # ddboat_all + rosbridge
-# or
-docker compose --profile sim up -d          # ddboat_sim + rosbridge
+docker compose --profile hw pull
 ```
 
--d option is falcultative but useful for running in detached mode and allowing auto restart of docker containers on start up
-
-When using the *hardware* profile you can change which host devices are bound
-into the containers by editing `.env` before starting compose
-(see the `GPS_DEV`, `ARDUINO_DEV`, … variables documented in the compose file).
-
-The `rosbridge` service (enabled in the hardware and simulation profiles) exposes the ROS 2 graph on a
-WebSocket port so that external applications can interact with the boat without
-running ROS 2 natively.  It is configured to use a 5 s default timeout for
-service calls and to handle service and action requests in background threads so
-that the WebSocket loop never blocks.
-
-You may need to pull new changes in the container image by doing:
+Pour recompiler localement (après modification du code) :
 
 ```bash
-docker compose --profile hw pull            # real hardware
-# or
-docker compose --profile sim pull           # simulated devices
+sh build_and_push.sh
 ```
-
-### Managing the compose stack
-
-Use the same `--profile` flag with all commands to target either the hardware
-or simulation services:
-
-```bash
-docker compose --profile hw stop         # pause running containers
-docker compose --profile hw start        # resume stopped containers
-docker compose --profile hw down         # remove containers
-docker compose --profile hw logs -f      # view aggregated logs
-```
-
-
 
 ---
 
-## Talking to the boat with `roslibpy`
+## Utilisation des drivers depuis Python
 
-`roslibpy` is a small Python library that speaks the rosbridge protocol.  After
-`docker compose` has started the `rosbridge` service you can publish and
-subscribe to topics from anywhere on the network:
+Une fois le service rosbridge lancé, vous pouvez interagir avec le bateau en Python via `roslibpy` :
+
+```python
+import roslibpy
+client = roslibpy.Ros(host='localhost', port=9090)
+client.run()
+twist_pub = roslibpy.Topic(client, '/motors_cmd', 'geometry_msgs/Twist')
+twist_pub.publish(roslibpy.Message({'linear': {'x': 50.0, 'y': 50.0, 'z': 0.0}, 'angular': {'x': 0.0, 'y': 0.0, 'z': 0.0}}))
+twist_pub.unadvertise()
+client.terminate()
+```
+
+Des exemples complets sont disponibles dans le dossier `tests/`.
+
+---
+
+## Architecture des nodes
+
+| Node (exécutable) | Rôle | Topic(s) |
+|-------------------|------|----------|
+| `gps_node`        | GNSS position | `sensor_msgs/NavSatFix` |
+| `arduino_node`    | Commande moteurs Arduino | `geometry_msgs/Twist` (sub) |
+| `encoders_node`   | Comptage propulseurs | `std_msgs/Int32MultiArray` |
+| `imu_node`        | IMU 9 axes + heading | `sensor_msgs/Imu`, `sensor_msgs/MagneticField`, `std_msgs/Float64` |
+| `temperature_node`| Températures moteurs | `sensor_msgs/Temperature` |
+| `radio_node`      | Communication LoRa | `std_msgs/String` |
+
+---
+
+## Conseils pratiques
+
+- Après installation, vérifiez que tout l'espace de la carte SD est utilisé (`raspi-config expand filesystem`).
+- Le script `install.bash` automatise toute la configuration sur les DDBoat actuels.
+- Pour tout problème matériel, vérifiez les ports dans `.env`.
+- Pour le debug, utilisez les profils `sim` ou `hw_extra`.
+
+---
+
+## Communication avec le bateau en Python (`roslibpy`)
+
+La librairie Python `roslibpy` permet de communiquer avec le bateau via le protocole rosbridge. Une fois le service `rosbridge` lancé (via `docker compose`), vous pouvez publier et recevoir des messages sur le réseau :
+
+
+
 
 ```python
 import roslibpy
@@ -183,78 +235,65 @@ twist_pub.unadvertise()
 client.terminate()
 ```
 
-The scripts under `tests/` provide more complete examples that exercise all
-drivers via rosbridge.
-
-for running them: 
+Des exemples complets sont disponibles dans le dossier `tests/`.
+Pour les exécuter :
 
 ```bash
 pip install -r requirements.txt
 python3 tests/test_xxxx_xxxx.py
 ```
 
-# Building Docker Images for DDBoat
+---
 
-## Build the Images on a PC
+## Construction des images Docker pour DDBoat
 
-We recommend building the Docker images on a PC to significantly reduce compilation time.  
-Instructions on how it works are available in [`ros2_image_builder/README.md`](ros2_image_builder/README.md).
+### Construction sur un PC
 
-This guide explains how to easily build and manually push the Docker images for the `ros2` image (and similarly for `ddboat`), as well as how to set up `buildx` for multi-architecture support.
+Il est recommandé de construire les images Docker sur un PC pour réduire le temps de compilation. Voir [`ros2_image_builder/README.md`](ros2_image_builder/README.md) pour plus de détails.
 
-Scripts to automate the build and push process are available once your multi-architecture Docker environment is configured.
+Pour construire et pousser les images :
 
 ```bash
-# For building the ros2 image
+# Pour l'image ros2
 cd ros2_image_builder && sh build_and_push.sh
-```
 
-```bash
-# For building the ddboat image (make sure you are in the root directory)
+# Pour l'image ddboat (depuis la racine du projet)
 sh build_and_push.sh
 ```
 
-Once the images are pushed, deploying to a Raspberry Pi is straightforward:  
-simply run `docker compose` using the provided file. Image pulling will happen automatically.
+Une fois les images poussées, le déploiement sur Raspberry Pi se fait simplement avec `docker compose`.
 
 ---
 
-## Build the Images on the Raspberry Pi
+### Construction sur le Raspberry Pi
 
-If you prefer to build the image directly on the Raspberry Pi, follow the steps below.
-Maybe you'll have to add colcon flags for single threaded compilation (available in [`old_Dockerfile`](old_Dockerfile))
-Make sure to update the `.env` file with the appropriate image name to match your local build.
+Vous pouvez aussi construire les images directement sur le Raspberry Pi. Pensez à adapter le fichier `.env` avec le nom d'image local.
 
-### Building the `ddboat` Image (after driver changes)
-
-If you have modified the driver code, rebuild the image with:
+#### Recompiler l'image ddboat après modification des drivers
 
 ```bash
-# From the root of the repository
+# Depuis la racine du dépôt
 docker build -t ddboat_ros2 .
 ```
 
-For 64-bit ARM boards, you can use the alternate Dockerfile to build a smaller image:
+Pour les cartes ARM 64 bits, vous pouvez utiliser le Dockerfile alternatif pour une image plus légère :
 
 ```bash
 docker build -t ddboat_ros2 -f old_Dockerfile .
 ```
 
-The image includes the `wjwwood/serial` library directly,  
-so no additional packages are required on the host system.
+La librairie `wjwwood/serial` est incluse dans l'image, aucune installation supplémentaire n'est nécessaire sur le système hôte.
 
 ---
 
-### Building the `ros2` Base Image (after dependency changes)
+#### Recompiler l'image ros2 après ajout de dépendances
 
-The base ROS 2 image includes only minimal dependencies and essential ROS 2 packages.
-
-If you have added new dependencies in the driver code or elsewhere,  
-you will need to rebuild the ROS 2 image directly on the Raspberry Pi:
+L'image de base ROS 2 inclut uniquement les dépendances minimales et les paquets essentiels.
+Si vous ajoutez des dépendances dans le code, il faut recompiler l'image ros2 :
 
 ```bash
-# Inside the ros2_image_builder directory
+# Dans le dossier ros2_image_builder
 ./build_ros2.sh
 ```
 
-Make sure to test the image and push it if you plan to use it across multiple devices.
+Testez l'image et poussez-la si vous souhaitez l'utiliser sur plusieurs appareils.
