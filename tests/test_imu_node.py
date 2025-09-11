@@ -41,9 +41,9 @@ def main() -> None:
         print_all()
 
     def on_mag(msg):
-        mx = int(msg['vector']['x'])
-        my = int(msg['vector']['y'])
-        mz = int(msg['vector']['z'])
+        mx = int(msg['magnetic_field']['x'])
+        my = int(msg['magnetic_field']['y'])
+        mz = int(msg['magnetic_field']['z'])
         state['mag'] = (mx, my, mz)
         print_all()
 
