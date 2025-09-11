@@ -114,6 +114,7 @@ services:
       - ${LORA_DEV:-/dev/ttyLORA1}:${LORA_DEV:-/dev/ttyLORA1}
     command: >
       bash -c "ln -sf ${LORA_DEV} /dev/ttyLORA1 && ros2 run ros2_ddboat radio_node"
+    profiles: ["hw_extra"]
 
   # --------------------------------------------------
   # FULL STACK – SOFTWARE‑ONLY EMULATION
