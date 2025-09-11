@@ -58,7 +58,7 @@ def main() -> None:
     mag_topic = roslibpy.Topic(
         client,
         '/imu/mag',
-        'geometry_msgs/Vector3Stamped'
+        'sensor_msgs/MagneticField'
     )
     mag_topic.subscribe(on_mag)
 
