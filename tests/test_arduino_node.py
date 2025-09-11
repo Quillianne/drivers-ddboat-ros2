@@ -47,7 +47,7 @@ def main() -> None:
     ]
 
     for name in services:
-        srv = roslibpy.Service(client, f'/{name}', 'std_srvs/srv/Trigger')
+        srv = roslibpy.Service(client, '/' + name, 'std_srvs/srv/Trigger')
         try:
             res = srv.call(roslibpy.ServiceRequest(), timeout=5)
             print(f'{name}: success={res["success"]} msg={res.get("message", "")}')

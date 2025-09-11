@@ -60,8 +60,15 @@ private:
   void configure_sensors()
   {
     if (fd_ag_ >= 0) {
-      // Accelerometer: 119 Hz, +-4g, enable XYZ (CTRL_REG6_XL and CTRL_REG5_XL)
-      write_reg(fd_ag_, 0x6b, 0x20, 0x50); // CTRL_REG6_XL
+      // Activation du gyroscope : CTRL_REG1_G (0x10)
+      // 0x60 = 238 Hz, toutes axes activées
+      write_reg(fd_ag_, 0x6b, 0x10, 0x60); // Gyro ON
+
+      // Activation de l'accéléromètre : CTRL_REG6_XL (0x20)
+      // 0x60 = 238 Hz, toutes axes activées
+      write_reg(fd_ag_, 0x6b, 0x20, 0x60); // Accel ON
+
+      // Optionnel : configuration additionnelle si besoin
       write_reg(fd_ag_, 0x6b, 0x1F, 0x38); // CTRL_REG5_XL
     }
     if (fd_mg_ >= 0) {
