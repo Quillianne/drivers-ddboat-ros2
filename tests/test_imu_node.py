@@ -20,20 +20,32 @@ def main() -> None:
     client = roslibpy.Ros(host='localhost', port=9090)
     client.run()
 
+    state = {'acc': None, 'gyro': None, 'mag': None}
+
+    def print_all():
+        if state['acc'] and state['gyro'] and state['mag']:
+            ax, ay, az = state['acc']
+            gx, gy, gz = state['gyro']
+            mx, my, mz = state['mag']
+            print("MAG: %d %d %d\tACC: %d %d %d\tGYR: %d %d %d" % (mx, my, mz, ax, ay, az, gx, gy, gz), end='\r')
+
     def on_imu(msg):
-        ax = msg['linear_acceleration']['x']
-        ay = msg['linear_acceleration']['y']
-        az = msg['linear_acceleration']['z']
-        gx = msg['angular_velocity']['x']
-        gy = msg['angular_velocity']['y']
-        gz = msg['angular_velocity']['z']
-        print("ACC: %d %d %d\tGYR: %d %d %d" % (int(ax), int(ay), int(az), int(gx), int(gy), int(gz)), end='\r')
+        ax = int(msg['linear_acceleration']['x'])
+        ay = int(msg['linear_acceleration']['y'])
+        az = int(msg['linear_acceleration']['z'])
+        gx = int(msg['angular_velocity']['x'])
+        gy = int(msg['angular_velocity']['y'])
+        gz = int(msg['angular_velocity']['z'])
+        state['acc'] = (ax, ay, az)
+        state['gyro'] = (gx, gy, gz)
+        print_all()
 
     def on_mag(msg):
-        mx = msg['vector']['x']
-        my = msg['vector']['y']
-        mz = msg['vector']['z']
-        print("MAG: %d %d %d" % (int(mx), int(my), int(mz)), end='\r')
+        mx = int(msg['vector']['x'])
+        my = int(msg['vector']['y'])
+        mz = int(msg['vector']['z'])
+        state['mag'] = (mx, my, mz)
+        print_all()
 
 
     imu_topic = roslibpy.Topic(
