@@ -27,7 +27,7 @@ def main() -> None:
             ax, ay, az = state['acc']
             gx, gy, gz = state['gyro']
             mx, my, mz = state['mag']
-            print("MAG: %d %d %d\tACC: %d %d %d\tGYR: %d %d %d" % (mx, my, mz, ax, ay, az, gx, gy, gz), end='\r')
+            print("MAG: %d %d %d\t ACC: %d %d %d\t GYR: %d %d %d" % (mx, my, mz, ax, ay, az, gx, gy, gz), end='          \r')
 
     def on_imu(msg):
         ax = int(msg['linear_acceleration']['x'])
