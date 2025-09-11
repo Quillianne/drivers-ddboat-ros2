@@ -14,7 +14,7 @@ add_subdirectory(third_party/serial)
 
 add_executable(gps_node src/gps_node.cpp)
 target_link_libraries(gps_node serial_vendor)
-ament_target_dependencies(gps_node rclcpp sensor_msgs)
+ament_target_dependencies(gps_node rclcpp sensor_msgs std_srvs)
 
 add_executable(arduino_node src/arduino_node.cpp)
 target_link_libraries(arduino_node serial_vendor)

@@ -20,22 +20,33 @@ def main() -> None:
     client = roslibpy.Ros(host='localhost', port=9090)
     client.run()
 
+    state = {'acc': (0, 0, 0), 'gyro': (0, 0, 0), 'mag': (0, 0, 0)}
+
+    def print_all():
+        if state['acc'] and state['gyro'] and state['mag']:
+            ax, ay, az = state['acc']
+            gx, gy, gz = state['gyro']
+            mx, my, mz = state['mag']
+            print("MAG: %d %d %d\t ACC: %d %d %d\t GYR: %d %d %d" % (mx, my, mz, ax, ay, az, gx, gy, gz), end='          \r')
+
     def on_imu(msg):
-        print(f"IMU msg received: {msg}")
+        ax = int(msg['linear_acceleration']['x'])
+        ay = int(msg['linear_acceleration']['y'])
+        az = int(msg['linear_acceleration']['z'])
+        gx = int(msg['angular_velocity']['x'])
+        gy = int(msg['angular_velocity']['y'])
+        gz = int(msg['angular_velocity']['z'])
+        state['acc'] = (ax, ay, az)
+        state['gyro'] = (gx, gy, gz)
+        print_all()
 
-        calib_srv = roslibpy.Service(client, '/fast_heading_calibration', 'std_srvs/srv/Trigger')
-        try:
-            res = calib_srv.call(roslibpy.ServiceRequest(), timeout=5)
-            print(f'fast_heading_calibration: {res}')
-        except Exception as e:
-            print(f'fast_heading_calibration failed: {e}')
+    def on_mag(msg):
+        mx = int(msg['magnetic_field']['x'])
+        my = int(msg['magnetic_field']['y'])
+        mz = int(msg['magnetic_field']['z'])
+        state['mag'] = (mx, my, mz)
+        print_all()
 
-        # Clean up in a background thread
-        def _shutdown():
-            imu_topic.unsubscribe()
-            client.terminate()
-
-        threading.Thread(target=_shutdown, daemon=True).start()
 
     imu_topic = roslibpy.Topic(
         client,
@@ -43,6 +54,13 @@ def main() -> None:
         'sensor_msgs/Imu'
     )
     imu_topic.subscribe(on_imu)
+
+    mag_topic = roslibpy.Topic(
+        client,
+        '/imu/mag',
+        'sensor_msgs/MagneticField'
+    )
+    mag_topic.subscribe(on_mag)
 
     # Keep the script alive until `client.terminate()` is called
     try:

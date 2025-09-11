@@ -27,7 +27,7 @@ def main() -> None:
 
     # Callback for incoming messages on /radio_rx
     def on_rx(msg):
-        print(f"radio rx: {msg['data']}")
+        print("radio rx: {}".format(msg['data']))
         # Clean up in a background thread to avoid joining the current thread
         def _shutdown():
             rx_topic.unsubscribe()
@@ -41,8 +41,8 @@ def main() -> None:
 
     # Publish a few test messages like the original driver did
     for i in range(3):
-        tx_msg = {'data': f'ping {i+1}'}
-        print(f'sending: {tx_msg["data"]}')
+        tx_msg = {'data': 'ping {}'.format(i+1)}
+        print('sending: {}'.format(tx_msg["data"]))
         tx_topic.publish(roslibpy.Message(tx_msg))
         time.sleep(0.1)
 

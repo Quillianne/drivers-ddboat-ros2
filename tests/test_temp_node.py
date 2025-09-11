@@ -26,19 +26,19 @@ def main() -> None:
     def on_temp(msg):
         received['count'] += 1
         temp = msg['temperature']
-        print(f"Received temp {received['count']}: {temp}")
+        print("Received temp {}: {}".format(received['count'], temp))
         if received['count'] >= 2:
             standby_srv = roslibpy.Service(client, '/set_standby', 'std_srvs/srv/SetBool')
             cfg_srv = roslibpy.Service(client, '/get_config', 'std_srvs/srv/Trigger')
             try:
                 res = standby_srv.call(roslibpy.ServiceRequest({'data': True}), timeout=5)
-                print(f'set_standby(True): {res}')
+                print('set_standby(True): {}'.format(res))
                 res = cfg_srv.call(roslibpy.ServiceRequest(), timeout=5)
-                print(f'get_config: {res}')
+                print('get_config: {}'.format(res))
                 res = standby_srv.call(roslibpy.ServiceRequest({'data': False}), timeout=5)
-                print(f'set_standby(False): {res}')
+                print('set_standby(False): {}'.format(res))
             except Exception as e:
-                print(f'standby/config service failed: {e}')
+                print('standby/config service failed: {}'.format(e))
 
             # Clean up in a background thread to avoid joining current thread
             def _shutdown():
